@@ -438,6 +438,17 @@ html, body {
   max-width: 500px;
 }
 
+/* Texte narratif - Page 14 (même style) */
+.page14-narrative-overlay {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 150;
+  pointer-events: none;
+  user-select: none;
+  max-width: 500px;
+}
+
 /* Responsive pour le texte narratif */
 @media (max-width: 1024px) {
   .page2-narrative-overlay,
@@ -448,7 +459,8 @@ html, body {
   .page9-narrative-overlay,
   .page10-narrative-overlay,
   .page11-narrative-overlay,
-  .page13-narrative-overlay {
+  .page13-narrative-overlay,
+  .page14-narrative-overlay {
     top: 30px;
     left: 30px;
     max-width: 400px;
@@ -478,7 +490,8 @@ html, body {
   .page9-narrative-overlay,
   .page10-narrative-overlay,
   .page11-narrative-overlay,
-  .page13-narrative-overlay {
+  .page13-narrative-overlay,
+  .page14-narrative-overlay {
     top: 80px;
     right: 20px;
     left: 20px;

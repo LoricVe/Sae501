@@ -31,6 +31,7 @@ const PixiBDViewer = () => {
   const [showPage10Text, setShowPage10Text] = useState(false);
   const [showPage11Text, setShowPage11Text] = useState(false);
   const [showPage13Text, setShowPage13Text] = useState(false);
+  const [showPage14Text, setShowPage14Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
@@ -40,6 +41,7 @@ const PixiBDViewer = () => {
   const page10TextRef = useRef(null);
   const page11TextRef = useRef(null);
   const page13TextRef = useRef(null);
+  const page14TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -2399,6 +2401,201 @@ const PixiBDViewer = () => {
   };
 
   /**
+   * Animation spécifique pour la page 14 : effet poétique de chant avec mots qui montent en oscillant
+   */
+  const playPage14Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 13) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('🎶 Démarrage animation page 14 - Effet poétique de chant');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page14Elements) {
+      console.log('⚠️ Éléments page 14 existent déjà, suppression...');
+      const { floatingWords, wordInterval } = appRef.current.page14Elements;
+
+      // Arrêter l'intervalle
+      if (wordInterval) clearInterval(wordInterval);
+
+      // Supprimer les mots
+      if (floatingWords) {
+        floatingWords.forEach(word => {
+          gsap.killTweensOf(word);
+          if (word.parent) animationLayerRef.current.removeChild(word);
+          word.destroy();
+        });
+      }
+
+      appRef.current.page14Elements = null;
+    }
+
+    const floatingWords = [];
+
+    // Liste des sons poétiques à afficher
+    const poeticSounds = ['ohhh', 'ehhhh'];
+
+    // Fonction pour créer un mot flottant
+    const createFloatingWord = () => {
+      if (currentPageRef.current !== 13) return;
+
+      // Choisir un son aléatoire
+      const sound = poeticSounds[Math.floor(Math.random() * poeticSounds.length)];
+
+      // Créer le texte PIXI
+      const wordText = new PIXI.Text({
+        text: sound,
+        style: {
+          fontFamily: 'Cormorant Garamond, serif',
+          fontSize: 40 + Math.random() * 30, // Taille variable entre 40 et 70
+          fill: '#000000', // Noir
+          fontStyle: 'italic',
+          fontWeight: '400'
+        }
+      });
+
+      // Point de départ central en bas de l'écran
+      const startX = app.screen.width / 3;
+      const startY = app.screen.height - 250;
+
+      // Position finale aléatoire en X pour l'effet de dispersion
+      const targetX = Math.random() * app.screen.width;
+
+      wordText.x = startX;
+      wordText.y = startY;
+      wordText.anchor.set(0.5);
+      wordText.alpha = 0; // Commence invisible
+
+      // Ajouter au layer d'animation
+      animationLayerRef.current.addChild(wordText);
+      floatingWords.push(wordText);
+
+      // Paramètres de l'animation
+      const duration = 8 + Math.random() * 4; // Durée entre 8 et 12 secondes
+      const oscillationAmplitude = 30 + Math.random() * 40; // Amplitude de l'oscillation
+      const oscillationSpeed = 1 + Math.random(); // Vitesse de l'oscillation
+      const rotationRange = 15; // Rotation maximale en degrés
+
+      // Timeline GSAP pour coordonner toutes les animations
+      const timeline = gsap.timeline({
+        onComplete: () => {
+          // Suppression du mot une fois l'animation terminée
+          gsap.killTweensOf(wordText);
+          if (wordText.parent) {
+            animationLayerRef.current.removeChild(wordText);
+          }
+          if (!wordText.destroyed) {
+            wordText.destroy();
+          }
+          const index = floatingWords.indexOf(wordText);
+          if (index > -1) {
+            floatingWords.splice(index, 1);
+          }
+        }
+      });
+
+      // 1. Apparition et déplacement initial vers la position cible
+      timeline.to(wordText, {
+        alpha: 1,
+        x: targetX,
+        duration: 1.5,
+        ease: 'power2.out'
+      });
+
+      // 2. Montée vers le haut avec oscillation
+      timeline.to(wordText, {
+        y: -100, // Sort par le haut
+        duration: duration - 1.5,
+        ease: 'none'
+      }, '-=0.5'); // Commence légèrement avant la fin de l'apparition
+
+      // 3. Disparition progressive
+      timeline.to(wordText, {
+        alpha: 0,
+        duration: 2,
+        ease: 'power2.in'
+      }, `-=${2.5}`); // Commence 2.5 secondes avant la fin
+
+      // Animation de l'oscillation horizontale (mouvement de plume) - en parallèle
+      gsap.to(wordText, {
+        x: `+=${oscillationAmplitude}`,
+        duration: oscillationSpeed * 2,
+        ease: 'sine.inOut',
+        repeat: Math.ceil(duration / (oscillationSpeed * 2)),
+        yoyo: true,
+        delay: 1.5 // Commence après l'apparition
+      });
+
+      // Animation de la rotation (effet naturel) - en parallèle
+      gsap.to(wordText, {
+        rotation: (Math.random() - 0.5) * (rotationRange * Math.PI / 180),
+        duration: oscillationSpeed * 1.5,
+        ease: 'sine.inOut',
+        repeat: Math.ceil(duration / (oscillationSpeed * 1.5)),
+        yoyo: true,
+        delay: 1.5 // Commence après l'apparition
+      });
+    };
+
+    // Créer des mots régulièrement
+    const wordInterval = setInterval(() => {
+      if (currentPageRef.current === 13) {
+        createFloatingWord();
+      } else {
+        clearInterval(wordInterval);
+      }
+    }, 800); // Un nouveau mot toutes les 0.8 secondes
+
+    // Créer quelques mots immédiatement
+    setTimeout(() => {
+      if (currentPageRef.current === 13) {
+        createFloatingWord();
+      }
+    }, 300);
+
+    setTimeout(() => {
+      if (currentPageRef.current === 13) {
+        createFloatingWord();
+      }
+    }, 600);
+
+    // Stocker les références
+    appRef.current.page14Elements = {
+      floatingWords,
+      wordInterval
+    };
+
+    console.log('✅ Animation page 14 créée: effet poétique de chant');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 14 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 13) {
+        setShowPage14Text(true);
+
+        requestAnimationFrame(() => {
+          if (page14TextRef.current && currentPageRef.current === 13) {
+            gsap.fromTo(
+              page14TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
    * Reset du zoom et de la position d'un sprite (utilisé lors du changement de page)
    * Mode "cover" : remplit tout l'écran
    */
@@ -2671,6 +2868,39 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 13 interrompue - Notes dorées et particules supprimées');
     }
 
+    // Si on quitte la page 14, supprimer les éléments d'animation
+    if (currentPageRef.current === 13 && appRef.current.page14Elements) {
+      const { floatingWords, wordInterval } = appRef.current.page14Elements;
+
+      // Arrêter l'intervalle
+      if (wordInterval) clearInterval(wordInterval);
+
+      // Supprimer les mots de manière sécurisée
+      if (floatingWords) {
+        floatingWords.forEach(word => {
+          // Tuer toutes les animations GSAP liées à ce mot
+          gsap.killTweensOf(word);
+
+          // Retirer du parent si existe encore
+          if (word.parent && animationLayerRef.current) {
+            animationLayerRef.current.removeChild(word);
+          }
+
+          // Détruire l'objet si pas déjà détruit
+          if (!word.destroyed) {
+            word.destroy();
+          }
+        });
+
+        // Vider le tableau
+        floatingWords.length = 0;
+      }
+
+      appRef.current.page14Elements = null;
+      setShowPage14Text(false);
+      console.log('🛑 Animation page 14 interrompue - Mots flottants supprimés');
+    }
+
     // Si on quitte la page 4, supprimer les éléments d'animation
     if (currentPageRef.current === 3 && appRef.current.page4Elements) {
       const { flowerSprites, flowerContainer, faceOverlay, flowerUpdateTicker, tearDrops, tearTimers } = appRef.current.page4Elements;
@@ -2776,6 +3006,11 @@ const PixiBDViewer = () => {
       setShowPage13Text(false);
     }
 
+    // Si on va vers la page 14, masquer le texte (il sera réaffiché par playPage14Animation)
+    if (pageIndex === 13) {
+      setShowPage14Text(false);
+    }
+
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
     resetSpriteTransform(nextSprite);
 
@@ -2836,6 +3071,11 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 13, démarrer l'animation des notes dorées et particules brillantes
         if (pageIndex === 12) {
           playPage13Animation();
+        }
+
+        // Si on arrive sur la page 14, démarrer l'animation de l'effet poétique de chant
+        if (pageIndex === 13) {
+          playPage14Animation();
         }
       }
     });
@@ -3129,6 +3369,17 @@ const PixiBDViewer = () => {
           <div className="narrative-box">
             <p className="narrative-text">
               Une paire d'années passa lorsque le fils du roi qui chevauchait par ces bois vint à passer près de la tour. Il entendit un chant qui était si doux qu'il s'arrêta et écouta, le cœur profondément ému.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 14 uniquement) */}
+      {!isLoading && showPage14Text && currentPageRef.current === 13 && (
+        <div ref={page14TextRef} className="page14-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Le chant l'avait tellement touché que chaque jour il partait pour les bois l'écouter. Un jour, il vit la magicienne et entendit les mots magiques. "Est-ce l'échelle par laquelle on y parvient ? Alors je veux aussi tenter ma chance !" Le lendemain, il appela à son tour.
             </p>
           </div>
         </div>
