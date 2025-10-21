@@ -26,10 +26,18 @@ const PixiBDViewer = () => {
   const [showPage3Text, setShowPage3Text] = useState(false);
   const [showPage4Text, setShowPage4Text] = useState(false);
   const [showPage7Text, setShowPage7Text] = useState(false);
+  const [showPage8Text, setShowPage8Text] = useState(false);
+  const [showPage9Text, setShowPage9Text] = useState(false);
+  const [showPage10Text, setShowPage10Text] = useState(false);
+  const [showPage11Text, setShowPage11Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
   const page7TextRef = useRef(null);
+  const page8TextRef = useRef(null);
+  const page9TextRef = useRef(null);
+  const page10TextRef = useRef(null);
+  const page11TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -1330,6 +1338,799 @@ const PixiBDViewer = () => {
   };
 
   /**
+   * Animation spécifique pour la page 8 : zoom dramatique sur le visage + texte narratif
+   */
+  const playPage8Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 7) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('😰 Démarrage animation page 8 - Zoom dramatique + tension');
+
+    const sprite = spritesRef.current[7]; // Sprite de la page 8
+    if (!sprite) return;
+
+    // Sauvegarder la position initiale
+    const initialX = sprite.x;
+    const initialY = sprite.y;
+    const initialScaleX = sprite.scale.x;
+    const initialScaleY = sprite.scale.y;
+
+    // Configuration du zoom sur le visage du mari
+    // 🎨 AJUSTE CES VALEURS pour cibler le visage dans ton image
+    const zoomConfig = {
+      targetScale: 1.4,    // Niveau de zoom intense (1.4 = 140%)
+      offsetX: 80,        // Décalage horizontal
+      offsetY: 0,          // Décalage vertical
+      duration: 10,        // Durée du zoom lent (10 secondes)
+      ease: 'power2.inOut' // Easing smooth
+    };
+
+    console.log('🔍 Zoom dramatique sur le visage du mari...');
+
+    // Animation GSAP du zoom progressif
+    gsap.to(sprite, {
+      x: initialX + zoomConfig.offsetX,
+      y: initialY + zoomConfig.offsetY,
+      duration: zoomConfig.duration,
+      ease: zoomConfig.ease
+    });
+
+    gsap.to(sprite.scale, {
+      x: initialScaleX * zoomConfig.targetScale,
+      y: initialScaleY * zoomConfig.targetScale,
+      duration: zoomConfig.duration,
+      ease: zoomConfig.ease,
+      onComplete: () => {
+        // Après le zoom, ajouter des tremblements légers pour la tension
+        console.log('😨 Ajout de tremblements pour la tension...');
+
+        // Tremblements subtils répétés
+        gsap.to(sprite, {
+          x: sprite.x + (Math.random() - 0.5) * 6,
+          y: sprite.y + (Math.random() - 0.5) * 6,
+          duration: 0.08,
+          repeat: -1,
+          yoyo: true,
+          ease: 'none'
+        });
+
+        // === CRÉER L'EFFET DE BRILLANCE VIOLET MAGIQUE ===
+        console.log('✨ Création de la brillance violette magique...');
+        createMagicGlow();
+      }
+    });
+
+    // Fonction pour créer l'effet de brillance violet avec rayons
+    const createMagicGlow = () => {
+      if (currentPageRef.current !== 7 || !appRef.current) return;
+
+      const glowSprites = [];
+
+      // 🎨 CONFIGURATION DE LA POSITION DE LA BRILLANCE
+      // Position du pacte magique (centre de l'écran ou position spécifique)
+      const glowConfig = {
+        x: 0.54,      // Position X (0 = gauche, 0.5 = centre, 1 = droite)
+        y: 0.30,      // Position Y (0 = haut, 0.5 = centre, 1 = bas)
+        size: 80     // Taille du halo
+      };
+
+      // === CRÉER LE CERCLE CENTRAL VIOLET LUMINEUX ===
+      const glow = new PIXI.Graphics();
+      glow.circle(0, 0, glowConfig.size);
+      glow.fill({ color: 0x9B30FF, alpha: 0.6 }); // Violet magique
+
+      // Position
+      glow.x = app.screen.width * glowConfig.x;
+      glow.y = app.screen.height * glowConfig.y;
+
+      // Appliquer un filtre de flou pour effet de lueur
+      const blurFilter = new PIXI.BlurFilter();
+      blurFilter.blur = 25;
+      glow.filters = [blurFilter];
+
+      // Ajouter au layer d'animation
+      animationLayerRef.current.addChild(glow);
+      glowSprites.push(glow);
+
+      // === CRÉER LES TRAITS LUMINEUX VIOLETS AUTOUR (RAYONS) ===
+      const rayCount = 12; // Nombre de traits
+      const rayLength = glowConfig.size * 2; // Longueur des traits
+      const rayWidth = 3; // Épaisseur des traits
+
+      for (let i = 0; i < rayCount; i++) {
+        const angle = (Math.PI * 2 / rayCount) * i;
+
+        const ray = new PIXI.Graphics();
+
+        // Dessiner une ligne depuis le centre vers l'extérieur
+        const startX = Math.cos(angle) * glowConfig.size * 0.7;
+        const startY = Math.sin(angle) * glowConfig.size * 0.7;
+        const endX = Math.cos(angle) * rayLength;
+        const endY = Math.sin(angle) * rayLength;
+
+        ray.moveTo(startX, startY);
+        ray.lineTo(endX, endY);
+        ray.stroke({ width: rayWidth, color: 0x9B30FF, alpha: 0.8 });
+
+        // Position identique au cercle
+        ray.x = app.screen.width * glowConfig.x;
+        ray.y = app.screen.height * glowConfig.y;
+
+        // Filtre de flou pour les traits
+        const rayBlur = new PIXI.BlurFilter();
+        rayBlur.blur = 10;
+        ray.filters = [rayBlur];
+
+        // Ajouter au layer
+        animationLayerRef.current.addChild(ray);
+        glowSprites.push(ray);
+
+        // Animation de rotation des traits
+        gsap.to(ray, {
+          rotation: Math.PI * 2,
+          duration: 6 + Math.random() * 3,
+          repeat: -1,
+          ease: 'none'
+        });
+
+        // Animation de l'opacité des traits (scintillement)
+        gsap.to(ray, {
+          alpha: 0.3,
+          duration: 1.2,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: Math.random() * 0.5
+        });
+      }
+
+      // === ANIMATIONS DU CERCLE CENTRAL ===
+      // Animation de l'opacité (scintillement intense)
+      gsap.to(glow, {
+        alpha: 0.9,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      // Animation de pulsation de la taille
+      gsap.to(glow.scale, {
+        x: 1.5,
+        y: 1.5,
+        duration: 1.8,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      // Stocker les références pour nettoyage
+      appRef.current.page8MagicGlow = glowSprites;
+
+      console.log('✨ Brillance violette créée avec', rayCount, 'rayons magiques');
+    };
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 8 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 7) {
+        setShowPage8Text(true);
+
+        requestAnimationFrame(() => {
+          if (page8TextRef.current && currentPageRef.current === 7) {
+            gsap.fromTo(
+              page8TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
+   * Animation spécifique pour la page 9 : zoom rapide + transition automatique vers page 10
+   */
+  const playPage9Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 8) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('🏰 Démarrage animation page 9 - Zoom rapide + transition automatique');
+
+    const sprite = spritesRef.current[8]; // Sprite de la page 9
+    if (!sprite) return;
+
+    // Sauvegarder la position initiale
+    const initialX = sprite.x;
+    const initialY = sprite.y;
+    const initialScaleX = sprite.scale.x;
+    const initialScaleY = sprite.scale.y;
+
+    // Configuration du zoom rapide
+    const zoomConfig = {
+      targetScale: 2.0,    // Zoom intense (200%)
+      offsetX: -500,          // Décalage horizontal
+      offsetY: 0,          // Décalage vertical
+      duration: 1.7,       // Durée rapide (1.5 secondes)
+      ease: 'power2.in'    // Easing rapide
+    };
+
+    console.log('🔍 Attente de 5 secondes avant le zoom rapide...');
+
+    // Attendre 5 secondes avant de lancer le zoom
+    setTimeout(() => {
+      if (currentPageRef.current !== 8) return; // Sécurité si on a changé de page
+
+      console.log('🔍 Démarrage du zoom rapide...');
+
+      // Animation GSAP du zoom rapide
+      gsap.to(sprite, {
+        x: initialX + zoomConfig.offsetX,
+        y: initialY + zoomConfig.offsetY,
+        duration: zoomConfig.duration,
+        ease: zoomConfig.ease
+      });
+
+      gsap.to(sprite.scale, {
+        x: initialScaleX * zoomConfig.targetScale,
+        y: initialScaleY * zoomConfig.targetScale,
+        duration: zoomConfig.duration,
+        ease: zoomConfig.ease,
+        onComplete: () => {
+          // Après le zoom, transition automatique vers la page 10
+          console.log('➡️ Transition automatique vers la page 10...');
+          setTimeout(() => {
+            if (currentPageRef.current === 8) {
+              goToPage(9); // Aller à la page 10 (index 9)
+            }
+          }, 200); // Court délai avant la transition
+        
+        }
+      });
+    }, 9000); // Délai de 5 secondes avant le zoom
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 9 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 8) {
+        setShowPage9Text(true);
+
+        requestAnimationFrame(() => {
+          if (page9TextRef.current && currentPageRef.current === 8) {
+            gsap.fromTo(
+              page9TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 100); // Affichage rapide du texte (0.1s)
+  };
+
+  /**
+   * Animation spécifique pour la page 10 : nuages clairs + oiseaux volants + texte narratif
+   */
+  const playPage10Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 9) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('🌤️ Démarrage animation page 10 - Nuages clairs et oiseaux');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page10Elements) {
+      console.log('⚠️ Éléments page 10 existent déjà, suppression...');
+      const { clouds, birds, birdInterval } = appRef.current.page10Elements;
+
+      // Arrêter l'intervalle des oiseaux
+      if (birdInterval) {
+        clearInterval(birdInterval);
+      }
+
+      // Supprimer les nuages
+      if (clouds) {
+        clouds.forEach(cloud => {
+          gsap.killTweensOf(cloud);
+          cloud.destroy();
+        });
+      }
+
+      // Supprimer les oiseaux
+      if (birds) {
+        birds.forEach(bird => {
+          gsap.killTweensOf(bird);
+          bird.destroy();
+        });
+      }
+
+      appRef.current.page10Elements = null;
+    }
+
+    const clouds = [];
+    const birds = [];
+
+    // === CRÉER LES NUAGES CLAIRS ===
+    const cloudCount = 20; // Nombre de nuages
+
+    for (let i = 0; i < cloudCount; i++) {
+      const cloud = new PIXI.Graphics();
+
+      // Créer une forme de nuage (plusieurs cercles qui se chevauchent)
+      const cloudWidth = 120 + Math.random() * 80;
+      const cloudHeight = 50 + Math.random() * 30;
+      const circleCount = 4 + Math.floor(Math.random() * 3);
+
+      for (let j = 0; j < circleCount; j++) {
+        const radius = cloudHeight / 2 + Math.random() * 15;
+        const offsetX = (j / circleCount) * cloudWidth - cloudWidth / 2;
+        const offsetY = Math.random() * 8 - 4;
+
+        cloud.circle(offsetX, offsetY, radius);
+      }
+
+      // Couleur claire (blanc/gris très clair)
+      cloud.fill({ color: 0xFFFFFF, alpha: 0.5 }); // Blanc transparent
+
+      // Position éparpillée en haut de l'écran
+      cloud.x = Math.random() * app.screen.width;
+      cloud.y = Math.random() * 0.35 * app.screen.height; // Dans les 25% du haut
+      cloud.alpha = 0; // Invisible au départ
+
+      // Ajouter un flou pour effet réaliste
+      const blurFilter = new PIXI.BlurFilter();
+      blurFilter.blur = 12;
+      cloud.filters = [blurFilter];
+
+      animationLayerRef.current.addChild(cloud);
+      clouds.push(cloud);
+
+      // Animation d'apparition progressive
+      gsap.to(cloud, {
+        alpha: 0.6,
+        duration: 2,
+        ease: 'power2.out',
+        delay: i * 0.15
+      });
+
+      // Animation de mouvement lent horizontal
+      gsap.to(cloud, {
+        x: cloud.x + (Math.random() - 0.5) * 150,
+        duration: 12 + Math.random() * 8,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+    }
+
+    console.log('☁️ Nuages clairs créés:', cloudCount);
+
+    // === CRÉER LES OISEAUX (avec spritesheet oiseau1.png) ===
+    const createBird = async () => {
+      if (currentPageRef.current !== 9) return;
+
+      try {
+        // Charger le spritesheet de l'oiseau
+        const birdTexture = await PIXI.Assets.load('/assets/images/oiseau1.png');
+        const bird = new PIXI.Sprite(birdTexture);
+
+        // Configuration initiale
+        bird.anchor.set(0.5);
+        bird.alpha = 0;
+
+        // Taille de l'oiseau (augmentée)
+        const scale = 0.3 + Math.random() * 0.15; // Échelle entre 0.3 et 0.45 (beaucoup plus grand)
+        bird.scale.set(scale);
+
+        // Position de départ (à GAUCHE de l'écran, position Y aléatoire)
+        bird.x = -50; // Juste à gauche de l'écran
+        bird.y = Math.random() * app.screen.height * 0.6 + app.screen.height * 0.2; // Entre 20% et 80% de la hauteur
+
+        animationLayerRef.current.addChild(bird);
+        birds.push(bird);
+
+        // Position cible (à DROITE de l'écran)
+        const targetX = app.screen.width + 50; // À droite de l'écran
+        const duration = 5 + Math.random() * 3; // Durée du vol (5-8 secondes)
+
+        console.log('🕊️ Oiseau créé et envol lancé (gauche → droite)');
+
+        // Animation d'apparition
+        gsap.to(bird, {
+          alpha: 0.8,
+          duration: 0.5,
+          ease: 'power2.out'
+        });
+
+        // Animation de vol horizontal (droite vers gauche)
+        gsap.to(bird, {
+          x: targetX,
+          duration: duration,
+          ease: 'none',
+          onUpdate: () => {
+            // Petit mouvement vertical pour simuler le battement d'ailes
+            bird.y += Math.sin(bird.x * 0.02) * 0.5;
+          },
+          onComplete: () => {
+            // Faire disparaître l'oiseau
+            gsap.to(bird, {
+              alpha: 0,
+              duration: 0.3,
+              onComplete: () => {
+                if (bird.parent) {
+                  animationLayerRef.current.removeChild(bird);
+                }
+                bird.destroy();
+                const idx = birds.indexOf(bird);
+                if (idx > -1) birds.splice(idx, 1);
+              }
+            });
+          }
+        });
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement du spritesheet oiseau:', error);
+      }
+    };
+
+    // Créer des oiseaux régulièrement
+    const birdInterval = setInterval(() => {
+      if (currentPageRef.current === 9) {
+        createBird();
+      } else {
+        clearInterval(birdInterval);
+      }
+    }, 3000 + Math.random() * 4000); // Entre 3 et 7 secondes
+
+    // Créer le premier oiseau après 1 seconde
+    setTimeout(() => {
+      if (currentPageRef.current === 9) {
+        createBird();
+      }
+    }, 1000);
+
+    // Stocker les références
+    appRef.current.page10Elements = {
+      clouds,
+      birds,
+      birdInterval
+    };
+
+    console.log('✅ Animation page 10 créée: nuages et oiseaux');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 10 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 9) {
+        setShowPage10Text(true);
+
+        requestAnimationFrame(() => {
+          if (page10TextRef.current && currentPageRef.current === 9) {
+            gsap.fromTo(
+              page10TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
+   * Animation spécifique pour la page 11 : notes de musique + particules dorées pour cheveux
+   */
+  const playPage11Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 10) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('🎵 Démarrage animation page 11 - Notes de musique + particules dorées');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page11Elements) {
+      console.log('⚠️ Éléments page 11 existent déjà, suppression...');
+      const { musicNotes, goldenParticles, musicInterval, particleInterval } = appRef.current.page11Elements;
+
+      // Arrêter les intervalles
+      if (musicInterval) clearInterval(musicInterval);
+      if (particleInterval) clearInterval(particleInterval);
+
+      // Supprimer les notes
+      if (musicNotes) {
+        musicNotes.forEach(note => {
+          gsap.killTweensOf(note);
+          if (note.parent) animationLayerRef.current.removeChild(note);
+          note.destroy();
+        });
+      }
+
+      // Supprimer les particules
+      if (goldenParticles) {
+        goldenParticles.forEach(particle => {
+          gsap.killTweensOf(particle);
+          if (particle.parent) animationLayerRef.current.removeChild(particle);
+          particle.destroy();
+        });
+      }
+
+      appRef.current.page11Elements = null;
+    }
+
+    const musicNotes = [];
+    const goldenParticles = [];
+
+    // === CRÉER LES NOTES DE MUSIQUE ===
+    const createMusicNote = () => {
+      if (currentPageRef.current !== 10) return;
+
+      const note = new PIXI.Graphics();
+
+      // Symbole de note de musique (cercle + barre)
+      // Cercle de la note
+      note.circle(0, 0, 12);
+      note.fill({ color: 0x000000, alpha: 0.8 });
+
+      // Barre de la note
+      note.rect(10, -30, 3, 30);
+      note.fill({ color: 0x000000, alpha: 0.8 });
+
+      // 🎨 POSITION DE DÉPART DES NOTES (bouche de Raiponce)
+      // Tu pourras ajuster ces valeurs selon la position du visage
+      const startConfig = {
+        x: 0.50,  // Position X (0 = gauche, 1 = droite)
+        y: 0.35   // Position Y (0 = haut, 1 = bas)
+      };
+
+      note.x = app.screen.width * startConfig.x;
+      note.y = app.screen.height * startConfig.y;
+      note.alpha = 0;
+
+      // Taille aléatoire
+      const scale = 0.8 + Math.random() * 0.4;
+      note.scale.set(scale);
+
+      animationLayerRef.current.addChild(note);
+      musicNotes.push(note);
+
+      // Animation de la note (monte en flottant)
+      const targetY = note.y - 150 - Math.random() * 100;
+      const targetX = note.x + (Math.random() - 0.5) * 100;
+      const duration = 2 + Math.random() * 1.5;
+
+      // Apparition
+      gsap.to(note, {
+        alpha: 0.8,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+
+      // Rotation douce
+      gsap.to(note, {
+        rotation: (Math.random() - 0.5) * 0.5,
+        duration: duration,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1
+      });
+
+      // Mouvement vertical et horizontal
+      gsap.to(note, {
+        x: targetX,
+        y: targetY,
+        duration: duration,
+        ease: 'power1.out',
+        onComplete: () => {
+          // Disparition
+          gsap.to(note, {
+            alpha: 0,
+            duration: 0.5,
+            onComplete: () => {
+              if (note.parent) animationLayerRef.current.removeChild(note);
+              note.destroy();
+              const idx = musicNotes.indexOf(note);
+              if (idx > -1) musicNotes.splice(idx, 1);
+            }
+          });
+        }
+      });
+
+      console.log('🎵 Note de musique créée');
+    };
+
+    // === CRÉER LES PARTICULES DORÉES (pour les cheveux) ===
+    const createGoldenParticle = () => {
+      if (currentPageRef.current !== 10) return;
+
+      const particle = new PIXI.Graphics();
+
+      // Particule dorée scintillante (étoile ou cercle)
+      const type = Math.random() > 0.5 ? 'star' : 'circle';
+
+      if (type === 'circle') {
+        // Cercle doré
+        particle.circle(0, 0, 3 + Math.random() * 4);
+        particle.fill({ color: 0xFFD700, alpha: 0.9 }); // Or
+      } else {
+        // Étoile à 4 branches
+        const size = 8 + Math.random() * 6;
+        particle.moveTo(0, -size);
+        particle.lineTo(size * 0.3, 0);
+        particle.lineTo(size, 0);
+        particle.lineTo(size * 0.3, size * 0.3);
+        particle.lineTo(0, size);
+        particle.lineTo(-size * 0.3, size * 0.3);
+        particle.lineTo(-size, 0);
+        particle.lineTo(-size * 0.3, 0);
+        particle.closePath();
+        particle.fill({ color: 0xFFD700, alpha: 0.9 });
+      }
+
+      // 🎨 POSITION DES PARTICULES DORÉES (cheveux de Raiponce)
+      // Tu pourras ajuster ces valeurs selon la position des cheveux
+      const hairConfig = {
+        x: 0.50,  // Position X centrale
+        y: 0.35,  // Position Y (haut de la tête)
+        spread: 0.05  // Étalement horizontal (réduit pour être plus concentré)
+      };
+
+      particle.x = app.screen.width * (hairConfig.x + (Math.random() - 0.5) * hairConfig.spread);
+      particle.y = app.screen.height * hairConfig.y + Math.random() * 40; // Réduit de 100 à 40 pour concentration verticale
+      particle.alpha = 0;
+
+      // Ajouter un flou pour effet brillant
+      const blurFilter = new PIXI.BlurFilter();
+      blurFilter.blur = 3;
+      particle.filters = [blurFilter];
+
+      animationLayerRef.current.addChild(particle);
+      goldenParticles.push(particle);
+
+      // Animation de la particule (monte doucement en scintillant)
+      const targetY = particle.y - 80 - Math.random() * 60;
+      const duration = 2 + Math.random() * 1.5;
+
+      // Apparition
+      gsap.to(particle, {
+        alpha: 0.9,
+        duration: 0.3,
+        ease: 'power2.out'
+      });
+
+      // Scintillement
+      gsap.to(particle, {
+        alpha: 0.3,
+        duration: 0.5,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1
+      });
+
+      // Rotation
+      gsap.to(particle, {
+        rotation: Math.PI * 2,
+        duration: duration * 0.8,
+        ease: 'none',
+        repeat: -1
+      });
+
+      // Mouvement vertical
+      gsap.to(particle, {
+        y: targetY,
+        duration: duration,
+        ease: 'sine.out',
+        onComplete: () => {
+          // Disparition
+          gsap.to(particle, {
+            alpha: 0,
+            duration: 0.5,
+            onComplete: () => {
+              if (particle.parent) animationLayerRef.current.removeChild(particle);
+              particle.destroy();
+              const idx = goldenParticles.indexOf(particle);
+              if (idx > -1) goldenParticles.splice(idx, 1);
+            }
+          });
+        }
+      });
+
+      console.log('✨ Particule dorée créée');
+    };
+
+    // Créer des notes de musique régulièrement
+    const musicInterval = setInterval(() => {
+      if (currentPageRef.current === 10) {
+        createMusicNote();
+      } else {
+        clearInterval(musicInterval);
+      }
+    }, 800); // Toutes les 0.8 secondes
+
+    // Créer des particules dorées régulièrement
+    const particleInterval = setInterval(() => {
+      if (currentPageRef.current === 10) {
+        createGoldenParticle();
+      } else {
+        clearInterval(particleInterval);
+      }
+    }, 300); // Toutes les 0.3 secondes (plus fréquent)
+
+    // Créer quelques éléments immédiatement
+    setTimeout(() => {
+      if (currentPageRef.current === 10) {
+        createMusicNote();
+        createGoldenParticle();
+      }
+    }, 500);
+
+    // Stocker les références
+    appRef.current.page11Elements = {
+      musicNotes,
+      goldenParticles,
+      musicInterval,
+      particleInterval
+    };
+
+    console.log('✅ Animation page 11 créée: notes de musique + particules dorées');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 11 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 10) {
+        setShowPage11Text(true);
+
+        requestAnimationFrame(() => {
+          if (page11TextRef.current && currentPageRef.current === 10) {
+            gsap.fromTo(
+              page11TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
    * Reset du zoom et de la position d'un sprite (utilisé lors du changement de page)
    * Mode "cover" : remplit tout l'écran
    */
@@ -1472,6 +2273,105 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 7 interrompue - Magicienne, nuages et éclairs supprimés');
     }
 
+    // Si on quitte la page 8, arrêter les animations
+    if (currentPageRef.current === 7) {
+      const sprite = spritesRef.current[7];
+      if (sprite) {
+        gsap.killTweensOf(sprite);
+        gsap.killTweensOf(sprite.scale);
+      }
+
+      // Supprimer la brillance violette
+      if (appRef.current.page8MagicGlow) {
+        appRef.current.page8MagicGlow.forEach(glowSprite => {
+          gsap.killTweensOf(glowSprite);
+          gsap.killTweensOf(glowSprite.scale);
+          animationLayerRef.current.removeChild(glowSprite);
+          glowSprite.destroy();
+        });
+        appRef.current.page8MagicGlow = null;
+      }
+
+      setShowPage8Text(false);
+      console.log('🛑 Animation page 8 interrompue - Zoom, tremblements et brillance arrêtés');
+    }
+
+    // Si on quitte la page 9, arrêter les animations
+    if (currentPageRef.current === 8) {
+      const sprite = spritesRef.current[8];
+      if (sprite) {
+        gsap.killTweensOf(sprite);
+        gsap.killTweensOf(sprite.scale);
+      }
+      setShowPage9Text(false);
+      console.log('🛑 Animation page 9 interrompue - Zoom rapide arrêté');
+    }
+
+    // Si on quitte la page 10, supprimer les éléments d'animation
+    if (currentPageRef.current === 9 && appRef.current.page10Elements) {
+      const { clouds, birds, birdInterval } = appRef.current.page10Elements;
+
+      // Arrêter l'intervalle des oiseaux
+      if (birdInterval) {
+        clearInterval(birdInterval);
+      }
+
+      // Supprimer les nuages
+      if (clouds) {
+        clouds.forEach(cloud => {
+          gsap.killTweensOf(cloud);
+          animationLayerRef.current.removeChild(cloud);
+          cloud.destroy();
+        });
+      }
+
+      // Supprimer les oiseaux
+      if (birds) {
+        birds.forEach(bird => {
+          gsap.killTweensOf(bird);
+          if (bird.parent) {
+            animationLayerRef.current.removeChild(bird);
+          }
+          bird.destroy();
+        });
+      }
+
+      appRef.current.page10Elements = null;
+      setShowPage10Text(false);
+      console.log('🛑 Animation page 10 interrompue - Nuages et oiseaux supprimés');
+    }
+
+    // Si on quitte la page 11, supprimer les éléments d'animation
+    if (currentPageRef.current === 10 && appRef.current.page11Elements) {
+      const { musicNotes, goldenParticles, musicInterval, particleInterval } = appRef.current.page11Elements;
+
+      // Arrêter les intervalles
+      if (musicInterval) clearInterval(musicInterval);
+      if (particleInterval) clearInterval(particleInterval);
+
+      // Supprimer les notes
+      if (musicNotes) {
+        musicNotes.forEach(note => {
+          gsap.killTweensOf(note);
+          if (note.parent) animationLayerRef.current.removeChild(note);
+          note.destroy();
+        });
+      }
+
+      // Supprimer les particules
+      if (goldenParticles) {
+        goldenParticles.forEach(particle => {
+          gsap.killTweensOf(particle);
+          if (particle.parent) animationLayerRef.current.removeChild(particle);
+          particle.destroy();
+        });
+      }
+
+      appRef.current.page11Elements = null;
+      setShowPage11Text(false);
+      console.log('🛑 Animation page 11 interrompue - Notes et particules supprimées');
+    }
+
     // Si on quitte la page 4, supprimer les éléments d'animation
     if (currentPageRef.current === 3 && appRef.current.page4Elements) {
       const { flowerSprites, flowerContainer, faceOverlay, flowerUpdateTicker, tearDrops, tearTimers } = appRef.current.page4Elements;
@@ -1552,6 +2452,26 @@ const PixiBDViewer = () => {
       setShowPage7Text(false);
     }
 
+    // Si on va vers la page 8, masquer le texte (il sera réaffiché par playPage8Animation)
+    if (pageIndex === 7) {
+      setShowPage8Text(false);
+    }
+
+    // Si on va vers la page 9, masquer le texte (il sera réaffiché par playPage9Animation)
+    if (pageIndex === 8) {
+      setShowPage9Text(false);
+    }
+
+    // Si on va vers la page 10, masquer le texte (il sera réaffiché par playPage10Animation)
+    if (pageIndex === 9) {
+      setShowPage10Text(false);
+    }
+
+    // Si on va vers la page 11, masquer le texte (il sera réaffiché par playPage11Animation)
+    if (pageIndex === 10) {
+      setShowPage11Text(false);
+    }
+
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
     resetSpriteTransform(nextSprite);
 
@@ -1587,6 +2507,26 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 7, démarrer l'animation de la magicienne
         if (pageIndex === 6) {
           playPage7Animation();
+        }
+
+        // Si on arrive sur la page 8, démarrer l'animation du zoom dramatique
+        if (pageIndex === 7) {
+          playPage8Animation();
+        }
+
+        // Si on arrive sur la page 9, démarrer l'animation du zoom rapide + transition
+        if (pageIndex === 8) {
+          playPage9Animation();
+        }
+
+        // Si on arrive sur la page 10, démarrer l'animation des nuages et oiseaux
+        if (pageIndex === 9) {
+          playPage10Animation();
+        }
+
+        // Si on arrive sur la page 11, démarrer l'animation des notes de musique et particules
+        if (pageIndex === 10) {
+          playPage11Animation();
         }
       }
     });
@@ -1821,6 +2761,54 @@ const PixiBDViewer = () => {
               Il le fit à nouveau au crépuscule.
               Mais tandis qu'il grimpait au mur, il fut brusquement effrayé car il aperçut la magicienne qui se tenait devant lui.
               « Comment peux-tu te risquer à pénétrer dans mon jardin et à me voler mes raiponces comme un brigand ? » dit-elle avec courroux.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 8 uniquement) */}
+      {!isLoading && showPage8Text && currentPageRef.current === 7 && (
+        <div ref={page8TextRef} className="page8-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              « Hélas, faites-moi grâce ! Mon épouse est enceinte et serait morte si elle n'avait pas pu en manger. »
+              <br /><br />
+              La magicienne laissa tomber son courroux :
+              <br /><br />
+              « Prends-en autant que tu voudras, mais tu dois me donner l'enfant que ta femme mettra au monde. »
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 9 uniquement) */}
+      {!isLoading && showPage9Text && currentPageRef.current === 8 && (
+        <div ref={page9TextRef} className="page9-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              L'homme par peur acquiesça à tout. Lorsque après quelques semaines sa femme accoucha, apparut immédiatement la magicienne, qui donna le nom de Raiponce à l'enfant et l'emmena avec elle.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 10 uniquement) */}
+      {!isLoading && showPage10Text && currentPageRef.current === 9 && (
+        <div ref={page10TextRef} className="page10-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Raiponce devint la plus belle enfant qui soit. Lorsqu'elle eut douze ans, la magicienne l'enferma dans une tour qui se dressait dans une forêt et qui ne possédait ni escalier ni porte ; seule tout en haut s'ouvrait une petite fenêtre.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 11 uniquement) */}
+      {!isLoading && showPage11Text && currentPageRef.current === 10 && (
+        <div ref={page11TextRef} className="page11-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Raiponce, dans sa solitude, passait le temps en chantant et faisait résonner sa douce voix. Elle avait de longs et splendides cheveux fins et filés comme de l'or.
             </p>
           </div>
         </div>

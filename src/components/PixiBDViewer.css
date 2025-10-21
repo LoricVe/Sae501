@@ -344,6 +344,12 @@ html, body {
     0 0 10px rgba(0, 0, 0, 0.5);
 }
 
+/* Texte spécifique pour la page 8 - plus petit */
+.page8-narrative-overlay .narrative-text {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
 /* Texte narratif - Page 3 (même style que page 2) */
 .page3-narrative-overlay {
   position: absolute;
@@ -377,12 +383,60 @@ html, body {
   max-width: 500px;
 }
 
+/* Texte narratif - Page 8 (même style que page 2, 3, 4 et 7) */
+.page8-narrative-overlay {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 150;
+  pointer-events: none;
+  user-select: none;
+  max-width: 500px;
+}
+
+/* Texte narratif - Page 9 (même style) */
+.page9-narrative-overlay {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 150;
+  pointer-events: none;
+  user-select: none;
+  max-width: 500px;
+}
+
+/* Texte narratif - Page 10 (même style) */
+.page10-narrative-overlay {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 150;
+  pointer-events: none;
+  user-select: none;
+  max-width: 500px;
+}
+
+/* Texte narratif - Page 11 (même style) */
+.page11-narrative-overlay {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 150;
+  pointer-events: none;
+  user-select: none;
+  max-width: 500px;
+}
+
 /* Responsive pour le texte narratif */
 @media (max-width: 1024px) {
   .page2-narrative-overlay,
   .page3-narrative-overlay,
   .page4-narrative-overlay,
-  .page7-narrative-overlay {
+  .page7-narrative-overlay,
+  .page8-narrative-overlay,
+  .page9-narrative-overlay,
+  .page10-narrative-overlay,
+  .page11-narrative-overlay {
     top: 30px;
     left: 30px;
     max-width: 400px;
@@ -396,13 +450,22 @@ html, body {
     font-size: 1.1rem;
     line-height: 1.7;
   }
+
+  .page8-narrative-overlay .narrative-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
 }
 
 @media (max-width: 768px) {
   .page2-narrative-overlay,
   .page3-narrative-overlay,
   .page4-narrative-overlay,
-  .page7-narrative-overlay {
+  .page7-narrative-overlay,
+  .page8-narrative-overlay,
+  .page9-narrative-overlay,
+  .page10-narrative-overlay,
+  .page11-narrative-overlay {
     top: 80px;
     right: 20px;
     left: 20px;
@@ -416,6 +479,11 @@ html, body {
   .narrative-text {
     font-size: 1rem;
     line-height: 1.6;
+  }
+
+  .page8-narrative-overlay .narrative-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
 }
 
