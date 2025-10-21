@@ -91,7 +91,7 @@ const PixiBDViewer = () => {
       for (let i = 0; i < AVAILABLE_PAGES.length; i++) {
         const pageNum = AVAILABLE_PAGES[i];
         // Chemin correct pour Vite : /assets au lieu de /src/assets
-        const imagePath = `/assets/images/page ${pageNum}.png`;
+        const imagePath = `/assets/images/page${pageNum}.png`;
 
         // Charger la texture
         const texture = await PIXI.Assets.load(imagePath);
