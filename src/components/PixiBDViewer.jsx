@@ -30,6 +30,7 @@ const PixiBDViewer = () => {
   const [showPage9Text, setShowPage9Text] = useState(false);
   const [showPage10Text, setShowPage10Text] = useState(false);
   const [showPage11Text, setShowPage11Text] = useState(false);
+  const [showPage13Text, setShowPage13Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
@@ -38,6 +39,7 @@ const PixiBDViewer = () => {
   const page9TextRef = useRef(null);
   const page10TextRef = useRef(null);
   const page11TextRef = useRef(null);
+  const page13TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -2131,6 +2133,272 @@ const PixiBDViewer = () => {
   };
 
   /**
+   * Animation spécifique pour la page 13 : notes de musique dorées traversant de droite à gauche + particules brillantes
+   */
+  const playPage13Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 12) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('🎶 Démarrage animation page 13 - Notes dorées + particules brillantes');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page13Elements) {
+      console.log('⚠️ Éléments page 13 existent déjà, suppression...');
+      const { musicNotes, sparkles, musicInterval, sparkleInterval } = appRef.current.page13Elements;
+
+      // Arrêter les intervalles
+      if (musicInterval) clearInterval(musicInterval);
+      if (sparkleInterval) clearInterval(sparkleInterval);
+
+      // Supprimer les notes
+      if (musicNotes) {
+        musicNotes.forEach(note => {
+          gsap.killTweensOf(note);
+          if (note.parent) animationLayerRef.current.removeChild(note);
+          note.destroy();
+        });
+      }
+
+      // Supprimer les particules
+      if (sparkles) {
+        sparkles.forEach(sparkle => {
+          gsap.killTweensOf(sparkle);
+          if (sparkle.parent) animationLayerRef.current.removeChild(sparkle);
+          sparkle.destroy();
+        });
+      }
+
+      appRef.current.page13Elements = null;
+    }
+
+    const musicNotes = [];
+    const sparkles = [];
+
+    // === CRÉER LES NOTES DE MUSIQUE DORÉES (qui traversent de droite à gauche) ===
+    const createGoldenMusicNote = () => {
+      if (currentPageRef.current !== 12) return;
+
+      const note = new PIXI.Graphics();
+
+      // Symbole de note de musique (cercle + barre)
+      // Cercle de la note
+      note.circle(0, 0, 15);
+      note.fill({ color: 0xFFD700, alpha: 0.9 }); // Or brillant
+
+      // Barre de la note
+      note.rect(12, -35, 4, 35);
+      note.fill({ color: 0xFFD700, alpha: 0.9 });
+
+      // 🎨 POSITION DE DÉPART (droite de l'écran, hauteur variable)
+      const startConfig = {
+        x: 1.05,  // Juste à droite de l'écran
+        yMin: 0.3,  // Hauteur minimale (30% de l'écran)
+        yMax: 0.7   // Hauteur maximale (70% de l'écran)
+      };
+
+      note.x = app.screen.width * startConfig.x;
+      note.y = app.screen.height * (startConfig.yMin + Math.random() * (startConfig.yMax - startConfig.yMin));
+      note.alpha = 0;
+
+      // Taille aléatoire
+      const scale = 1.0 + Math.random() * 0.5;
+      note.scale.set(scale);
+
+      // Ajouter un filtre de brillance
+      const glowFilter = new PIXI.BlurFilter();
+      glowFilter.blur = 5;
+      note.filters = [glowFilter];
+
+      animationLayerRef.current.addChild(note);
+      musicNotes.push(note);
+
+      // Animation de la note (droite vers gauche)
+      const targetX = -100; // À gauche de l'écran
+      const duration = 6 + Math.random() * 3; // Durée 6-9 secondes
+
+      // Apparition
+      gsap.to(note, {
+        alpha: 0.9,
+        duration: 0.5,
+        ease: 'power2.out'
+      });
+
+      // Rotation douce
+      gsap.to(note, {
+        rotation: (Math.random() - 0.5) * 0.8,
+        duration: duration * 0.5,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1
+      });
+
+      // Mouvement horizontal (droite vers gauche)
+      gsap.to(note, {
+        x: targetX,
+        duration: duration,
+        ease: 'none',
+        onUpdate: () => {
+          // Légère ondulation verticale
+          note.y += Math.sin(note.x * 0.01) * 0.8;
+        },
+        onComplete: () => {
+          // Disparition
+          gsap.to(note, {
+            alpha: 0,
+            duration: 0.5,
+            onComplete: () => {
+              if (note.parent) animationLayerRef.current.removeChild(note);
+              note.destroy();
+              const idx = musicNotes.indexOf(note);
+              if (idx > -1) musicNotes.splice(idx, 1);
+            }
+          });
+        }
+      });
+
+      console.log('🎶 Note dorée créée (droite → gauche)');
+    };
+
+    // === CRÉER LES PARTICULES BRILLANTES (étoiles scintillantes autour des notes) ===
+    const createSparkle = () => {
+      if (currentPageRef.current !== 12) return;
+
+      const sparkle = new PIXI.Graphics();
+
+      // Étoile brillante à 4 branches
+      const size = 4 + Math.random() * 6;
+      sparkle.moveTo(0, -size);
+      sparkle.lineTo(size * 0.3, 0);
+      sparkle.lineTo(size, 0);
+      sparkle.lineTo(size * 0.3, size * 0.3);
+      sparkle.lineTo(0, size);
+      sparkle.lineTo(-size * 0.3, size * 0.3);
+      sparkle.lineTo(-size, 0);
+      sparkle.lineTo(-size * 0.3, 0);
+      sparkle.closePath();
+      sparkle.fill({ color: 0xFFD700, alpha: 1.0 }); // Or brillant
+
+      // Position autour de la zone de passage des notes
+      sparkle.x = app.screen.width * (0.3 + Math.random() * 0.6); // Entre 30% et 90%
+      sparkle.y = app.screen.height * (0.3 + Math.random() * 0.4); // Entre 30% et 70%
+      sparkle.alpha = 0;
+
+      // Ajouter un filtre de brillance intense
+      const glowFilter = new PIXI.BlurFilter();
+      glowFilter.blur = 4;
+      sparkle.filters = [glowFilter];
+
+      animationLayerRef.current.addChild(sparkle);
+      sparkles.push(sparkle);
+
+      const duration = 1 + Math.random() * 1;
+
+      // Scintillement intense
+      gsap.to(sparkle, {
+        alpha: 1.0,
+        duration: 0.2,
+        ease: 'power2.out',
+        onComplete: () => {
+          gsap.to(sparkle, {
+            alpha: 0,
+            duration: duration,
+            ease: 'power2.in',
+            onComplete: () => {
+              if (sparkle.parent) animationLayerRef.current.removeChild(sparkle);
+              sparkle.destroy();
+              const idx = sparkles.indexOf(sparkle);
+              if (idx > -1) sparkles.splice(idx, 1);
+            }
+          });
+        }
+      });
+
+      // Rotation rapide
+      gsap.to(sparkle, {
+        rotation: Math.PI * 2,
+        duration: duration * 0.5,
+        ease: 'none'
+      });
+
+      // Légère pulsation
+      gsap.to(sparkle.scale, {
+        x: 1.5,
+        y: 1.5,
+        duration: duration * 0.5,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: 1
+      });
+
+      console.log('✨ Particule brillante créée');
+    };
+
+    // Créer des notes de musique dorées régulièrement
+    const musicInterval = setInterval(() => {
+      if (currentPageRef.current === 12) {
+        createGoldenMusicNote();
+      } else {
+        clearInterval(musicInterval);
+      }
+    }, 1200); // Toutes les 1.2 secondes
+
+    // Créer des particules brillantes régulièrement
+    const sparkleInterval = setInterval(() => {
+      if (currentPageRef.current === 12) {
+        createSparkle();
+      } else {
+        clearInterval(sparkleInterval);
+      }
+    }, 150); // Toutes les 0.15 secondes (très fréquent pour effet brillant intense)
+
+    // Créer quelques éléments immédiatement
+    setTimeout(() => {
+      if (currentPageRef.current === 12) {
+        createGoldenMusicNote();
+        createSparkle();
+      }
+    }, 500);
+
+    // Stocker les références
+    appRef.current.page13Elements = {
+      musicNotes,
+      sparkles,
+      musicInterval,
+      sparkleInterval
+    };
+
+    console.log('✅ Animation page 13 créée: notes dorées + particules brillantes');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 13 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 12) {
+        setShowPage13Text(true);
+
+        requestAnimationFrame(() => {
+          if (page13TextRef.current && currentPageRef.current === 12) {
+            gsap.fromTo(
+              page13TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
    * Reset du zoom et de la position d'un sprite (utilisé lors du changement de page)
    * Mode "cover" : remplit tout l'écran
    */
@@ -2372,6 +2640,37 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 11 interrompue - Notes et particules supprimées');
     }
 
+    // Si on quitte la page 13, supprimer les éléments d'animation
+    if (currentPageRef.current === 12 && appRef.current.page13Elements) {
+      const { musicNotes, sparkles, musicInterval, sparkleInterval } = appRef.current.page13Elements;
+
+      // Arrêter les intervalles
+      if (musicInterval) clearInterval(musicInterval);
+      if (sparkleInterval) clearInterval(sparkleInterval);
+
+      // Supprimer les notes
+      if (musicNotes) {
+        musicNotes.forEach(note => {
+          gsap.killTweensOf(note);
+          if (note.parent) animationLayerRef.current.removeChild(note);
+          note.destroy();
+        });
+      }
+
+      // Supprimer les particules
+      if (sparkles) {
+        sparkles.forEach(sparkle => {
+          gsap.killTweensOf(sparkle);
+          if (sparkle.parent) animationLayerRef.current.removeChild(sparkle);
+          sparkle.destroy();
+        });
+      }
+
+      appRef.current.page13Elements = null;
+      setShowPage13Text(false);
+      console.log('🛑 Animation page 13 interrompue - Notes dorées et particules supprimées');
+    }
+
     // Si on quitte la page 4, supprimer les éléments d'animation
     if (currentPageRef.current === 3 && appRef.current.page4Elements) {
       const { flowerSprites, flowerContainer, faceOverlay, flowerUpdateTicker, tearDrops, tearTimers } = appRef.current.page4Elements;
@@ -2472,6 +2771,11 @@ const PixiBDViewer = () => {
       setShowPage11Text(false);
     }
 
+    // Si on va vers la page 13, masquer le texte (il sera réaffiché par playPage13Animation)
+    if (pageIndex === 12) {
+      setShowPage13Text(false);
+    }
+
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
     resetSpriteTransform(nextSprite);
 
@@ -2527,6 +2831,11 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 11, démarrer l'animation des notes de musique et particules
         if (pageIndex === 10) {
           playPage11Animation();
+        }
+
+        // Si on arrive sur la page 13, démarrer l'animation des notes dorées et particules brillantes
+        if (pageIndex === 12) {
+          playPage13Animation();
         }
       }
     });
@@ -2809,6 +3118,17 @@ const PixiBDViewer = () => {
           <div className="narrative-box">
             <p className="narrative-text">
               Raiponce, dans sa solitude, passait le temps en chantant et faisait résonner sa douce voix. Elle avait de longs et splendides cheveux fins et filés comme de l'or.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 13 uniquement) */}
+      {!isLoading && showPage13Text && currentPageRef.current === 12 && (
+        <div ref={page13TextRef} className="page13-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Une paire d'années passa lorsque le fils du roi qui chevauchait par ces bois vint à passer près de la tour. Il entendit un chant qui était si doux qu'il s'arrêta et écouta, le cœur profondément ému.
             </p>
           </div>
         </div>
