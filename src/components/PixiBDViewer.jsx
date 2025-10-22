@@ -25,23 +25,33 @@ const PixiBDViewer = () => {
   const [showPage2Text, setShowPage2Text] = useState(false);
   const [showPage3Text, setShowPage3Text] = useState(false);
   const [showPage4Text, setShowPage4Text] = useState(false);
+  const [showPage5Text, setShowPage5Text] = useState(false);
+  const [showPage6Text, setShowPage6Text] = useState(false);
   const [showPage7Text, setShowPage7Text] = useState(false);
   const [showPage8Text, setShowPage8Text] = useState(false);
   const [showPage9Text, setShowPage9Text] = useState(false);
   const [showPage10Text, setShowPage10Text] = useState(false);
   const [showPage11Text, setShowPage11Text] = useState(false);
+  const [showPage12Text, setShowPage12Text] = useState(false);
   const [showPage13Text, setShowPage13Text] = useState(false);
   const [showPage14Text, setShowPage14Text] = useState(false);
+  const [showPage15Text, setShowPage15Text] = useState(false);
+  const [showPage16Text, setShowPage16Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
+  const page5TextRef = useRef(null);
+  const page6TextRef = useRef(null);
   const page7TextRef = useRef(null);
   const page8TextRef = useRef(null);
   const page9TextRef = useRef(null);
   const page10TextRef = useRef(null);
   const page11TextRef = useRef(null);
+  const page12TextRef = useRef(null);
   const page13TextRef = useRef(null);
   const page14TextRef = useRef(null);
+  const page15TextRef = useRef(null);
+  const page16TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -1035,6 +1045,484 @@ const PixiBDViewer = () => {
           if (page4TextRef.current && currentPageRef.current === 3) {
             gsap.fromTo(
               page4TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
+   * Animation spécifique pour la page 5 : ombre floue sous personnage + texte narratif
+   */
+  const playPage5Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 4) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+    console.log('🌑 Démarrage animation page 5 - Ombre floue sous personnage');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page5Elements) {
+      console.log('⚠️ Éléments page 5 existent déjà, suppression...');
+      const { shadow, moonContainer, outerGlow, middleGlow, moon } = appRef.current.page5Elements;
+
+      if (shadow) {
+        gsap.killTweensOf(shadow);
+        gsap.killTweensOf(shadow.scale);
+        shadow.destroy();
+      }
+
+      if (moonContainer) {
+        gsap.killTweensOf(moonContainer);
+      }
+
+      if (outerGlow) {
+        gsap.killTweensOf(outerGlow);
+        gsap.killTweensOf(outerGlow.scale);
+      }
+
+      if (middleGlow) {
+        gsap.killTweensOf(middleGlow);
+      }
+
+      if (moon) {
+        gsap.killTweensOf(moon);
+      }
+
+      if (moonContainer) {
+        moonContainer.destroy({ children: true });
+      }
+
+      appRef.current.page5Elements = null;
+    }
+
+    // === CRÉATION DE L'OMBRE FLOUE ===
+    // 🎨 AJUSTE LA POSITION ET LA TAILLE ICI :
+    // x: position horizontale (0 = gauche, 0.5 = centre, 1 = droite)
+    // y: position verticale (0 = haut, 0.5 = centre, 1 = bas)
+    // size: rayon de l'ombre
+    const shadowConfig = {
+      x: 0.7,      // Centre horizontal (ajuste selon ton personnage)
+      y: 0.9,      // Légèrement en bas (ajuste selon ton personnage)
+      size: 175    // Taille de l'ombre
+    };
+
+    const shadow = new PIXI.Graphics();
+    shadow.circle(0, 0, shadowConfig.size);
+    shadow.fill({ color: 0x000000, alpha: 0.5 });
+
+    // Position initiale
+    shadow.x = app.screen.width * shadowConfig.x;
+    shadow.y = app.screen.height * shadowConfig.y;
+
+    // Appliquer un filtre de flou important pour effet doux
+    const blurFilter = new PIXI.BlurFilter();
+    blurFilter.blur = 40;
+    shadow.filters = [blurFilter];
+
+    // Ajouter au layer d'animation
+    animationLayerRef.current.addChild(shadow);
+
+    console.log('🌑 Ombre créée à la position:', `${(shadowConfig.x*100).toFixed(0)}%`, `${(shadowConfig.y*100).toFixed(0)}%`);
+
+    // === ANIMATION INFINIE SUBTILE ===
+    // Variation de position (mouvement léger)
+    gsap.to(shadow, {
+      x: shadow.x + 5,
+      y: shadow.y + 3,
+      duration: 3,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    // Variation d'opacité
+    gsap.to(shadow, {
+      alpha: 0.5,
+      duration: 2.5,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    // Variation d'échelle
+    gsap.to(shadow.scale, {
+      x: 1.1,
+      y: 1.1,
+      duration: 3.5,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    // === CRÉATION DE LA LUNE ===
+    // 🎨 AJUSTE LA POSITION ET LA TAILLE ICI :
+    const moonConfig = {
+      x: 0.57,      // Position horizontale (0.85 = vers la droite)
+      y: 0.10,       // Position verticale (0.2 = en haut)
+      size: 60      // Rayon de la lune
+    };
+
+    // Container pour la lune et son halo
+    const moonContainer = new PIXI.Container();
+    moonContainer.x = app.screen.width * moonConfig.x;
+    moonContainer.y = app.screen.height * moonConfig.y;
+
+    // === HALO EXTÉRIEUR (grand, très flou) ===
+    const outerGlow = new PIXI.Graphics();
+    outerGlow.circle(0, 0, moonConfig.size * 2);
+    outerGlow.fill({ color: 0xFFFFDD, alpha: 0.15 });
+
+    const outerBlur = new PIXI.BlurFilter();
+    outerBlur.blur = 50;
+    outerGlow.filters = [outerBlur];
+
+    moonContainer.addChild(outerGlow);
+
+    // === HALO MOYEN ===
+    const middleGlow = new PIXI.Graphics();
+    middleGlow.circle(0, 0, moonConfig.size * 1.3);
+    middleGlow.fill({ color: 0xFFFFF0, alpha: 0.3 });
+
+    const middleBlur = new PIXI.BlurFilter();
+    middleBlur.blur = 25;
+    middleGlow.filters = [middleBlur];
+
+    moonContainer.addChild(middleGlow);
+
+    // === CORPS DE LA LUNE ===
+    const moon = new PIXI.Graphics();
+    moon.circle(0, 0, moonConfig.size);
+    moon.fill({ color: 0xFFFAE6, alpha: 0.9 });
+
+    const moonBlur = new PIXI.BlurFilter();
+    moonBlur.blur = 3;
+    moon.filters = [moonBlur];
+
+    moonContainer.addChild(moon);
+
+    // Ajouter au layer d'animation
+    animationLayerRef.current.addChild(moonContainer);
+
+    console.log('🌙 Lune créée à la position:', `${(moonConfig.x*100).toFixed(0)}%`, `${(moonConfig.y*100).toFixed(0)}%`);
+
+    // === ANIMATIONS DE LA LUNE ===
+    // Pulsation subtile du halo extérieur
+    gsap.to(outerGlow, {
+      alpha: 0.25,
+      duration: 4,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    gsap.to(outerGlow.scale, {
+      x: 1.1,
+      y: 1.1,
+      duration: 5,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    // Pulsation du halo moyen
+    gsap.to(middleGlow, {
+      alpha: 0.4,
+      duration: 3,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    // Légère variation de luminosité de la lune
+    gsap.to(moon, {
+      alpha: 1,
+      duration: 3.5,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    // Mouvement flottant très léger
+    gsap.to(moonContainer, {
+      y: moonContainer.y - 8,
+      duration: 6,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    gsap.to(moonContainer, {
+      x: moonContainer.x + 5,
+      duration: 7,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    // Stocker les éléments pour nettoyage ultérieur
+    appRef.current.page5Elements = {
+      shadow,
+      moonContainer,
+      outerGlow,
+      middleGlow,
+      moon
+    };
+
+    console.log('✅ Page 5 complète: ombre et lune animées créées');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 5 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 4) {
+        setShowPage5Text(true);
+
+        requestAnimationFrame(() => {
+          if (page5TextRef.current && currentPageRef.current === 4) {
+            gsap.fromTo(
+              page5TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
+   * Animation spécifique pour la page 6 : feu de cheminée animé + texte narratif
+   */
+  const playPage6Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 5) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+    console.log('🔥 Démarrage animation page 6 - Feu de cheminée');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page6Elements) {
+      console.log('⚠️ Éléments page 6 existent déjà, suppression...');
+      const { flames, embers, glow, emberTimers } = appRef.current.page6Elements;
+
+      // Arrêter tous les timers d'émission de braises
+      if (emberTimers) {
+        emberTimers.forEach(timer => clearInterval(timer));
+      }
+
+      // Supprimer les flammes
+      if (flames) {
+        flames.forEach(flame => {
+          gsap.killTweensOf(flame);
+          gsap.killTweensOf(flame.scale);
+          flame.destroy();
+        });
+      }
+
+      // Supprimer les braises
+      if (embers) {
+        embers.forEach(ember => {
+          gsap.killTweensOf(ember);
+          ember.destroy();
+        });
+      }
+
+      // Supprimer le halo
+      if (glow) {
+        gsap.killTweensOf(glow);
+        glow.destroy();
+      }
+
+      appRef.current.page6Elements = null;
+    }
+
+    // === CONFIGURATION DU FEU ===
+    // 🎨 AJUSTE LA POSITION ET LA TAILLE ICI :
+    const fireConfig = {
+      x: 0.51,           // Position horizontale (0.5 = centre)
+      y: 0.528,           // Position verticale (0.6 = légèrement en bas)
+      flameCount: 8,    // Nombre de flammes
+      flameWidth: 60,   // Largeur d'une flamme
+      flameHeight: 100   // Hauteur d'une flamme
+    };
+
+    const flames = [];
+    const embers = [];
+    const emberTimers = [];
+
+    // === 1. CRÉER LE HALO LUMINEUX ===
+    const glow = new PIXI.Graphics();
+    glow.circle(0, 0, 150);
+    glow.fill({ color: 0xffa500, alpha: 0.2 });
+
+    glow.x = app.screen.width * fireConfig.x;
+    glow.y = app.screen.height * fireConfig.y;
+
+    const glowBlur = new PIXI.BlurFilter();
+    glowBlur.blur = 30;
+    glow.filters = [glowBlur];
+
+    animationLayerRef.current.addChild(glow);
+
+    // Animation du halo
+    gsap.to(glow, {
+      alpha: 0.3,
+      duration: 2,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    console.log('🌟 Halo de lumière créé');
+
+    // === 2. CRÉER LES FLAMMES ===
+    for (let i = 0; i < fireConfig.flameCount; i++) {
+      const flame = new PIXI.Graphics();
+
+      // Dessiner une forme de flamme (ellipse allongée)
+      flame.ellipse(0, 0, fireConfig.flameWidth / 2, fireConfig.flameHeight / 2);
+
+      // Couleur dégradée : orange à jaune
+      const flameColor = i % 2 === 0 ? 0xff6600 : 0xffaa00;
+      flame.fill({ color: flameColor, alpha: 0.8 });
+
+      // Position de base dans la cheminée
+      const offsetX = (i - fireConfig.flameCount / 2) * (fireConfig.flameWidth / 2);
+      flame.x = app.screen.width * fireConfig.x + offsetX;
+      flame.y = app.screen.height * fireConfig.y;
+
+      // Léger flou pour effet de chaleur
+      const flameBlur = new PIXI.BlurFilter();
+      flameBlur.blur = 5;
+      flame.filters = [flameBlur];
+
+      animationLayerRef.current.addChild(flame);
+      flames.push(flame);
+
+      // === ANIMATIONS DES FLAMMES ===
+      // Oscillation verticale (scaleY)
+      gsap.to(flame.scale, {
+        y: 1.1 + Math.random() * 0.2,
+        duration: 0.3 + Math.random() * 0.4,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      // Ondulation horizontale (position x)
+      gsap.to(flame, {
+        x: flame.x + (Math.random() - 0.5) * 10,
+        duration: 0.5 + Math.random() * 0.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+
+      // Variation d'opacité
+      gsap.to(flame, {
+        alpha: 0.9 + Math.random() * 0.1,
+        duration: 0.4 + Math.random() * 0.3,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut'
+      });
+    }
+
+    console.log(`🔥 ${fireConfig.flameCount} flammes créées et animées`);
+
+    // === 3. CRÉER LES BRAISES SCINTILLANTES ===
+    const createEmber = () => {
+      if (currentPageRef.current !== 5) return; // Ne pas créer si on a quitté la page
+
+      const ember = new PIXI.Graphics();
+      const emberSize = 3 + Math.random() * 4;
+
+      ember.circle(0, 0, emberSize);
+      ember.fill({ color: 0xff4500, alpha: 0.8 });
+
+      // Position de départ (bas du feu)
+      const startX = app.screen.width * fireConfig.x + (Math.random() - 0.5) * 60;
+      const startY = app.screen.height * fireConfig.y + 20;
+
+      ember.x = startX;
+      ember.y = startY;
+
+      // Léger flou
+      const emberBlur = new PIXI.BlurFilter();
+      emberBlur.blur = 3;
+      ember.filters = [emberBlur];
+
+      animationLayerRef.current.addChild(ember);
+      embers.push(ember);
+
+      // Animation de montée et disparition
+      const duration = 1.5 + Math.random() * 1.5;
+
+      gsap.to(ember, {
+        y: startY - 80 - Math.random() * 40,
+        x: startX + (Math.random() - 0.5) * 30,
+        alpha: 0,
+        duration: duration,
+        ease: 'power1.out',
+        onComplete: () => {
+          // Retirer de la liste et détruire
+          const index = embers.indexOf(ember);
+          if (index > -1) embers.splice(index, 1);
+          ember.destroy();
+        }
+      });
+    };
+
+    // Créer des braises régulièrement
+    const emberInterval = setInterval(() => {
+      if (currentPageRef.current === 5) {
+        createEmber();
+      }
+    }, 300); // Une braise toutes les 300ms
+
+    emberTimers.push(emberInterval);
+
+    console.log('✨ Système de braises activé');
+
+    // Stocker les éléments pour nettoyage ultérieur
+    appRef.current.page6Elements = {
+      flames,
+      embers,
+      glow,
+      emberTimers
+    };
+
+    console.log('✅ Page 6 complète: feu de cheminée animé créé');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 6 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 5) {
+        setShowPage6Text(true);
+
+        requestAnimationFrame(() => {
+          if (page6TextRef.current && currentPageRef.current === 5) {
+            gsap.fromTo(
+              page6TextRef.current,
               {
                 opacity: 0,
                 y: 20
@@ -2135,6 +2623,305 @@ const PixiBDViewer = () => {
   };
 
   /**
+   * Animation spécifique pour la page 12 : zoom dramatique sur la tour + particules dorées féériques
+   */
+  const playPage12Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 11) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('🏰 Démarrage animation page 12 - Zoom sur la tour + particules dorées');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page12Elements) {
+      console.log('⚠️ Éléments page 12 existent déjà, suppression...');
+      const { particles, particleTimers, witchSprite } = appRef.current.page12Elements;
+
+      // Arrêter tous les timers de création de particules
+      if (particleTimers) {
+        particleTimers.forEach(timer => clearInterval(timer));
+      }
+
+      // Supprimer les particules
+      if (particles) {
+        particles.forEach(particle => {
+          gsap.killTweensOf(particle);
+          particle.destroy();
+        });
+      }
+
+      // Supprimer la sorcière
+      if (witchSprite) {
+        const sprite = witchSprite();
+        if (sprite) {
+          gsap.killTweensOf(sprite);
+          gsap.killTweensOf(sprite.scale);
+          sprite.destroy();
+        }
+      }
+
+      appRef.current.page12Elements = null;
+    }
+
+    const sprite = spritesRef.current[11]; // Sprite de la page 12
+    if (!sprite) return;
+
+    // Sauvegarder la position initiale
+    const initialX = sprite.x;
+    const initialY = sprite.y;
+    const initialScaleX = sprite.scale.x;
+    const initialScaleY = sprite.scale.y;
+
+    // === CONFIGURATION DU ZOOM CINÉMATIQUE ===
+    // 🎨 AJUSTE CES VALEURS pour cibler la fenêtre de la tour
+    const zoomConfig = {
+      targetScale: 1.7,     // Niveau de zoom (1.7 = 170% de la taille)
+      offsetX: -30,         // Décalage horizontal
+      offsetY: 100,         // Décalage vertical (positif = vers le bas, pour la tour)
+      zoomDuration: 1.5,    // Durée du zoom rapide vers le haut
+      panDownDuration: 2,   // Durée du panoramique vers le bas
+      dezoomDuration: 2     // Durée du dézoom final
+    };
+
+    console.log('🎬 Lancement de la cinématique de zoom...');
+
+    // === TIMELINE GSAP POUR LA CINÉMATIQUE ===
+    const timeline = gsap.timeline();
+
+    // 1. ZOOM RAPIDE VERS LE HAUT (vers la fenêtre)
+    timeline.to(sprite, {
+      x: initialX + zoomConfig.offsetX,
+      y: initialY + zoomConfig.offsetY,
+      duration: zoomConfig.zoomDuration,
+      ease: 'power2.inOut'
+    }, 0);
+
+    timeline.to(sprite.scale, {
+      x: initialScaleX * zoomConfig.targetScale,
+      y: initialScaleY * zoomConfig.targetScale,
+      duration: zoomConfig.zoomDuration,
+      ease: 'power2.inOut'
+    }, 0);
+
+    // 2. PANORAMIQUE VERS LE BAS
+    timeline.to(sprite, {
+      y: initialY,
+      duration: zoomConfig.panDownDuration,
+      ease: 'sine.inOut'
+    }, `+=${0}`);
+
+    // 3. PAUSE DE 0.5 SECONDE
+    timeline.to({}, { duration: 0.5 });
+
+    // 4. DÉZOOM PROGRESSIF VERS LA POSITION INITIALE
+    timeline.to(sprite, {
+      x: initialX,
+      y: initialY,
+      duration: zoomConfig.dezoomDuration,
+      ease: 'power2.inOut'
+    }, `+=${0}`);
+
+    timeline.to(sprite.scale, {
+      x: initialScaleX,
+      y: initialScaleY,
+      duration: zoomConfig.dezoomDuration,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        console.log('✅ Cinématique de zoom terminée - Lancement des particules et sorcière');
+        // Lancer les particules et la sorcière après le dézoom
+        startFairyDustParticles();
+        showWitchSprite();
+      }
+    }, `<`); // Commence en même temps que le dézoom précédent
+
+    // === SYSTÈME DE PARTICULES DORÉES FÉÉRIQUES ===
+    const particles = [];
+    const particleTimers = [];
+    let witchSprite = null;
+
+    // === FONCTION POUR AFFICHER LA SORCIÈRE ===
+    const showWitchSprite = async () => {
+      if (currentPageRef.current !== 11) return;
+
+      console.log('🧙‍♀️ Apparition de la sorcière...');
+
+      try {
+        // Charger l'image de la sorcière
+        const texture = await PIXI.Assets.load('/assets/images/sorciere2.png');
+
+        if (currentPageRef.current !== 11) return; // Vérifier qu'on est toujours sur la page
+
+        witchSprite = new PIXI.Sprite(texture);
+
+        // Configuration de la sorcière
+        // 🎨 AJUSTE LA POSITION ET LA TAILLE ICI :
+        const witchConfig = {
+          x: 0.6,        // Position horizontale (0.2 = à gauche, 20%)
+          y: 0.5,        // Position verticale (0.7 = en bas)
+          scale: 0.85     // Échelle (0.3 = 30% de la taille)
+        };
+
+        witchSprite.anchor.set(0.5);
+        witchSprite.x = app.screen.width * witchConfig.x;
+        witchSprite.y = app.screen.height * witchConfig.y;
+        witchSprite.scale.set(witchConfig.scale);
+        witchSprite.alpha = 0;
+
+        animationLayerRef.current.addChild(witchSprite);
+
+        console.log('🧙‍♀️ Sorcière positionnée à:', `${(witchConfig.x*100).toFixed(0)}%`, `${(witchConfig.y*100).toFixed(0)}%`);
+
+        // Animation d'apparition en fondu
+        gsap.to(witchSprite, {
+          alpha: 1,
+          duration: 1.5,
+          ease: 'power2.out'
+        });
+
+        // Animation subtile de balancement
+        gsap.to(witchSprite, {
+          rotation: 0.05,
+          duration: 2,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+
+        // Animation de respiration (légère variation d'échelle)
+        gsap.to(witchSprite.scale, {
+          x: witchConfig.scale * 1.05,
+          y: witchConfig.scale * 1.05,
+          duration: 2.5,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+
+        console.log('✅ Sorcière apparue avec succès');
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement de la sorcière:', error);
+      }
+    };
+
+    const startFairyDustParticles = () => {
+      if (currentPageRef.current !== 11) return;
+
+      console.log('✨ Activation des particules féériques dorées');
+
+      // Fonction pour créer une particule
+      const createParticle = () => {
+        if (currentPageRef.current !== 11) return;
+
+        const particle = new PIXI.Graphics();
+        const size = 3 + Math.random() * 5;
+
+        // Forme étoilée simple (cercle avec halo)
+        particle.circle(0, 0, size);
+        particle.fill({ color: 0xffd700, alpha: 0.7 });
+
+        // Position aléatoire au bas de l'écran
+        const startX = Math.random() * app.screen.width;
+        const startY = app.screen.height + 50;
+
+        particle.x = startX;
+        particle.y = startY;
+
+        // Filtre de flou pour effet brillant
+        const particleBlur = new PIXI.BlurFilter();
+        particleBlur.blur = 4;
+        particle.filters = [particleBlur];
+
+        animationLayerRef.current.addChild(particle);
+        particles.push(particle);
+
+        // Animation de montée avec rotation et ondulation
+        const duration = 4 + Math.random() * 3;
+        const targetY = -50 - Math.random() * 100;
+        const rotationAmount = Math.random() * Math.PI * 4;
+
+        gsap.to(particle, {
+          y: targetY,
+          x: startX + (Math.random() - 0.5) * 100,
+          rotation: rotationAmount,
+          alpha: 0,
+          duration: duration,
+          ease: 'sine.out',
+          onUpdate: () => {
+            // Variation d'opacité pendant la montée
+            const progress = 1 - (particle.y / startY);
+            particle.alpha = Math.max(0, 0.7 - progress);
+          },
+          onComplete: () => {
+            // Retirer de la liste et détruire
+            const index = particles.indexOf(particle);
+            if (index > -1) particles.splice(index, 1);
+            particle.destroy();
+          }
+        });
+
+        // Animation de variation d'échelle (scintillement)
+        gsap.to(particle.scale, {
+          x: 1.3,
+          y: 1.3,
+          duration: 0.5 + Math.random() * 0.5,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+      };
+
+      // Créer des particules régulièrement
+      const particleInterval = setInterval(() => {
+        if (currentPageRef.current === 11) {
+          createParticle();
+        }
+      }, 200); // Une particule toutes les 200ms
+
+      particleTimers.push(particleInterval);
+    };
+
+    // Stocker les éléments pour nettoyage ultérieur
+    appRef.current.page12Elements = {
+      particles,
+      particleTimers,
+      witchSprite: () => witchSprite // Fonction pour récupérer le sprite de la sorcière
+    };
+
+    console.log('✅ Page 12 complète: cinématique, particules et sorcière configurées');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 12 ===
+    // Afficher le texte après le dézoom (durée totale = zoomDuration + panDownDuration + pause + dezoomDuration)
+    const totalDuration = (zoomConfig.zoomDuration + zoomConfig.panDownDuration +
+                          0.5 + zoomConfig.dezoomDuration) * 1000;
+
+    setTimeout(() => {
+      if (currentPageRef.current === 11) {
+        setShowPage12Text(true);
+
+        requestAnimationFrame(() => {
+          if (page12TextRef.current && currentPageRef.current === 11) {
+            gsap.fromTo(
+              page12TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, totalDuration - 1000); // Commencer le texte 1s avant la fin du dézoom
+  };
+
+  /**
    * Animation spécifique pour la page 13 : notes de musique dorées traversant de droite à gauche + particules brillantes
    */
   const playPage13Animation = () => {
@@ -2474,7 +3261,7 @@ const PixiBDViewer = () => {
 
       // Paramètres de l'animation
       const duration = 8 + Math.random() * 4; // Durée entre 8 et 12 secondes
-      const oscillationAmplitude = 30 + Math.random() * 40; // Amplitude de l'oscillation
+      const oscillationAmplitude = 15 + Math.random() * 40; // Amplitude de l'oscillation
       const oscillationSpeed = 1 + Math.random(); // Vitesse de l'oscillation
       const rotationRange = 15; // Rotation maximale en degrés
 
@@ -2500,7 +3287,7 @@ const PixiBDViewer = () => {
       timeline.to(wordText, {
         alpha: 1,
         x: targetX,
-        duration: 1.5,
+        duration: 2.5,
         ease: 'power2.out'
       });
 
@@ -2546,7 +3333,7 @@ const PixiBDViewer = () => {
       } else {
         clearInterval(wordInterval);
       }
-    }, 800); // Un nouveau mot toutes les 0.8 secondes
+    }, 5000); // Un nouveau mot toutes les 0.8 secondes
 
     // Créer quelques mots immédiatement
     setTimeout(() => {
@@ -2593,6 +3380,472 @@ const PixiBDViewer = () => {
         });
       }
     }, 500);
+  };
+
+  /**
+   * Animation spécifique pour la page 15 : cœurs romantiques dans la zone de la fenêtre
+   */
+  const playPage15Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 14) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('💕 Démarrage animation page 15 - Cœurs romantiques dans la fenêtre');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page15Elements) {
+      console.log('⚠️ Éléments page 15 existent déjà, suppression...');
+      const { hearts, heartTimers, windowContainer } = appRef.current.page15Elements;
+
+      // Arrêter tous les timers
+      if (heartTimers) {
+        heartTimers.forEach(timer => clearInterval(timer));
+      }
+
+      // Supprimer les cœurs
+      if (hearts) {
+        hearts.forEach(heart => {
+          gsap.killTweensOf(heart);
+          gsap.killTweensOf(heart.scale);
+          heart.destroy();
+        });
+      }
+
+      // Supprimer le container
+      if (windowContainer) {
+        windowContainer.destroy({ children: true });
+      }
+
+      appRef.current.page15Elements = null;
+    }
+
+    // === CONFIGURATION DE LA ZONE FENÊTRE ===
+    // 🎨 AJUSTE LA POSITION ET LA TAILLE DE LA ZONE ICI :
+    const windowConfig = {
+      x: 0.5,           // Position horizontale du centre (0.5 = centre écran)
+      y: 0.35,          // Position verticale du centre (0.35 = vers le haut)
+      width: 300,       // Largeur de la zone
+      height: 400       // Hauteur de la zone
+    };
+
+    // Créer un container avec masque pour limiter les cœurs à la zone de la fenêtre
+    const windowContainer = new PIXI.Container();
+    windowContainer.x = app.screen.width * windowConfig.x;
+    windowContainer.y = app.screen.height * windowConfig.y;
+
+    // Créer le masque (rectangle invisible)
+    const mask = new PIXI.Graphics();
+    mask.rect(
+      -windowConfig.width / 2,
+      -windowConfig.height / 2,
+      windowConfig.width,
+      windowConfig.height
+    );
+    mask.fill({ color: 0xffffff, alpha: 1 });
+
+    windowContainer.addChild(mask);
+    windowContainer.mask = mask;
+
+    animationLayerRef.current.addChild(windowContainer);
+
+    console.log('🪟 Zone fenêtre créée:', windowConfig);
+
+    // === SYSTÈME DE CŒURS ROMANTIQUES ===
+    const hearts = [];
+    const heartTimers = [];
+
+    // Fonction pour créer un cœur
+    const createHeart = () => {
+      if (currentPageRef.current !== 14) return;
+
+      const heart = new PIXI.Graphics();
+      const size = 20 + Math.random() * 15; // Taille entre 20 et 35 (plus grand)
+
+      // Dessiner un cœur avec Graphics
+      heart.moveTo(0, -size * 0.3);
+      heart.bezierCurveTo(-size * 0.5, -size * 0.7, -size * 0.8, -size * 0.3, 0, size * 0.3);
+      heart.bezierCurveTo(size * 0.8, -size * 0.3, size * 0.5, -size * 0.7, 0, -size * 0.3);
+
+      // Couleurs plus vives et saturées
+      const colors = [0xff69b4, 0xff1493, 0xffd700, 0xff6347]; // Rose vif, rose profond, or, rouge-orange
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      heart.fill({ color, alpha: 1 }); // Alpha plus élevé pour plus de visibilité
+
+      // Position de départ (bas de la zone)
+      const startX = (Math.random() - 0.5) * (windowConfig.width - 100);
+      const startY = windowConfig.height / 2 - 20;
+
+      heart.x = startX;
+      heart.y = startY;
+      heart.alpha = 0;
+
+      // Filtre de lueur plus prononcé pour effet féérique
+      const glowFilter = new PIXI.BlurFilter();
+      glowFilter.blur = 12; // Plus de flou pour plus de brillance
+      heart.filters = [glowFilter];
+
+      windowContainer.addChild(heart);
+      hearts.push(heart);
+
+      // Animation de montée
+      const duration = 2 + Math.random() * 1; // Plus lent (2-3s)
+      const targetY = -windowConfig.height / 2 - 50;
+
+      // Fade in
+      gsap.to(heart, {
+        alpha: 0.85, // Plus opaque
+        duration: 0.5,
+        ease: 'power2.out'
+      });
+
+      // Montée avec oscillation
+      gsap.to(heart, {
+        y: targetY,
+        duration: duration,
+        ease: 'sine.in',
+        onComplete: () => {
+          // Tuer toutes les animations GSAP avant de détruire
+          gsap.killTweensOf(heart);
+          gsap.killTweensOf(heart.scale);
+
+          // Retirer de la liste et détruire
+          const index = hearts.indexOf(heart);
+          if (index > -1) hearts.splice(index, 1);
+
+          if (!heart.destroyed) {
+            heart.destroy();
+          }
+        }
+      });
+
+      // Oscillation horizontale continue
+      gsap.to(heart, {
+        x: startX + (Math.random() - 0.5) * 40,
+        duration: 1,
+        ease: 'sine.inOut',
+        repeat: Math.ceil(duration / 1) - 1,
+        yoyo: true
+      });
+
+      // Variation d'échelle (grossissement)
+      gsap.to(heart.scale, {
+        x: 1.4,
+        y: 1.4,
+        duration: duration * 0.8,
+        ease: 'power2.out'
+      });
+
+      // Fade out progressif vers la fin
+      gsap.to(heart, {
+        alpha: 0,
+        duration: duration * 0.4,
+        delay: duration * 0.6,
+        ease: 'power2.in'
+      });
+
+      // Rotation légère
+      gsap.to(heart, {
+        rotation: (Math.random() - 0.5) * 0.4,
+        duration: duration,
+        ease: 'sine.inOut'
+      });
+    };
+
+    // Créer des cœurs régulièrement et indéfiniment
+    const heartInterval = setInterval(() => {
+      if (currentPageRef.current === 14) {
+        createHeart();
+      }
+    }, 300); // Un cœur toutes les 300ms
+
+    heartTimers.push(heartInterval);
+
+    console.log('💕 Système de cœurs activé en continu');
+
+    // Stocker les éléments pour nettoyage ultérieur
+    appRef.current.page15Elements = {
+      hearts,
+      heartTimers,
+      windowContainer
+    };
+
+    console.log('✅ Page 15 complète: cœurs romantiques configurés');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 15 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 14) {
+        setShowPage15Text(true);
+
+        requestAnimationFrame(() => {
+          if (page15TextRef.current && currentPageRef.current === 14) {
+            gsap.fromTo(
+              page15TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 2000); // Après 2 secondes (assez pour voir les premiers cœurs)
+  };
+
+  /**
+   * Animation spécifique pour la page 16 : larmes qui tombent + cheveux dorés sur la table
+   */
+  const playPage16Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 15) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('😢 Démarrage animation page 16 - Larmes + cheveux dorés');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page16Elements) {
+      console.log('⚠️ Éléments page 16 existent déjà, suppression...');
+      const { tears, goldenHair, tearInterval, hairStrands } = appRef.current.page16Elements;
+
+      // Arrêter l'intervalle des larmes
+      if (tearInterval) clearInterval(tearInterval);
+
+      // Supprimer les larmes
+      if (tears) {
+        tears.forEach(tear => {
+          gsap.killTweensOf(tear);
+          if (!tear.destroyed) tear.destroy();
+        });
+      }
+
+      // Supprimer les cheveux dorés
+      if (hairStrands) {
+        hairStrands.forEach(strand => {
+          gsap.killTweensOf(strand);
+          gsap.killTweensOf(strand.scale);
+          if (!strand.destroyed) strand.destroy();
+        });
+      }
+
+      if (goldenHair && !goldenHair.destroyed) {
+        goldenHair.destroy({ children: true });
+      }
+
+      appRef.current.page16Elements = null;
+    }
+
+    const tears = [];
+    const hairStrands = [];
+
+    // === CONFIGURATION ===
+    const tearConfig = {
+      x: 0.5,      // Position horizontale du visage
+      y: 0.3,      // Position verticale du visage
+      frequency: 800 // Un larme toutes les 800ms
+    };
+
+    const hairConfig = {
+      tableX: 0.5,     // Centre horizontal
+      tableY: 0.5,     // Centre vertical (milieu de l'écran)
+      maxRadius: 250,  // Rayon maximum de propagation (augmenté)
+      strandCount: 35  // Nombre de filaments (augmenté)
+    };
+
+    // === 1. SYSTÈME DE LARMES ===
+    const createTear = () => {
+      if (currentPageRef.current !== 15) return;
+
+      const tear = new PIXI.Graphics();
+      const size = 4 + Math.random() * 3;
+
+      // Forme de larme (petit cercle allongé)
+      tear.ellipse(0, 0, size, size * 1.5);
+      tear.fill({ color: 0x87ceeb, alpha: 0.7 });
+
+      // Position de départ (visage)
+      const startX = app.screen.width * tearConfig.x + (Math.random() - 0.5) * 100;
+      const startY = app.screen.height * tearConfig.y;
+
+      tear.x = startX;
+      tear.y = startY;
+      tear.alpha = 0;
+
+      // Léger flou
+      const tearBlur = new PIXI.BlurFilter();
+      tearBlur.blur = 1;
+      tear.filters = [tearBlur];
+
+      animationLayerRef.current.addChild(tear);
+      tears.push(tear);
+
+      const duration = 2 + Math.random() * 1;
+      const targetY = app.screen.height + 50;
+
+      // Fade in
+      gsap.to(tear, {
+        alpha: 0.6,
+        duration: 0.5,
+        ease: 'power2.out'
+      });
+
+      // Chute de la larme
+      gsap.to(tear, {
+        y: targetY,
+        duration: duration,
+        ease: 'sine.in',
+        onComplete: () => {
+          gsap.killTweensOf(tear);
+          const index = tears.indexOf(tear);
+          if (index > -1) tears.splice(index, 1);
+          if (!tear.destroyed) tear.destroy();
+        }
+      });
+
+      // Légère oscillation
+      gsap.to(tear, {
+        x: startX + (Math.random() - 0.5) * 10,
+        duration: 1,
+        ease: 'sine.inOut',
+        repeat: Math.ceil(duration),
+        yoyo: true
+      });
+
+      // Fade out progressif
+      gsap.to(tear, {
+        alpha: 0,
+        duration: duration * 0.3,
+        delay: duration * 0.7,
+        ease: 'power2.in'
+      });
+    };
+
+    // Créer des larmes régulièrement
+    const tearInterval = setInterval(() => {
+      if (currentPageRef.current === 15) {
+        createTear();
+      }
+    }, tearConfig.frequency);
+
+    console.log('😢 Système de larmes activé');
+
+    // === 2. CHEVEUX DORÉS SUR LA TABLE (après 1 seconde) ===
+    setTimeout(() => {
+      if (currentPageRef.current !== 15) return;
+
+      console.log('✨ Début de la propagation des cheveux dorés');
+
+      const goldenHair = new PIXI.Container();
+      goldenHair.x = app.screen.width * hairConfig.tableX;
+      goldenHair.y = app.screen.height * hairConfig.tableY;
+
+      animationLayerRef.current.addChild(goldenHair);
+
+      // Créer les filaments de cheveux dorés
+      for (let i = 0; i < hairConfig.strandCount; i++) {
+        const angle = (Math.PI * 2 / hairConfig.strandCount) * i;
+        const length = 50 + Math.random() * (hairConfig.maxRadius - 50);
+
+        const strand = new PIXI.Graphics();
+
+        // Dessiner un filament (ligne courbe)
+        const controlX = Math.cos(angle) * length * 0.5 + (Math.random() - 0.5) * 30;
+        const controlY = Math.sin(angle) * length * 0.5 + (Math.random() - 0.5) * 30;
+        const endX = Math.cos(angle) * length;
+        const endY = Math.sin(angle) * length;
+
+        strand.moveTo(0, 0);
+        strand.quadraticCurveTo(controlX, controlY, endX, endY);
+        strand.stroke({ width: 3 + Math.random() * 3, color: 0xffd700, alpha: 0 }); // Plus épais (3-6px)
+
+        // Filtre de lueur plus prononcé
+        const glowFilter = new PIXI.BlurFilter();
+        glowFilter.blur = 10; // Plus de lueur
+        strand.filters = [glowFilter];
+
+        goldenHair.addChild(strand);
+        hairStrands.push(strand);
+
+        // Animation d'apparition progressive (propagation)
+        const delay = (length / hairConfig.maxRadius) * 1.5; // Plus loin = plus tard
+
+        gsap.to(strand, {
+          alpha: 0.8 + Math.random() * 0.2, // Plus opaque (0.8-1.0)
+          duration: 1,
+          delay: delay,
+          ease: 'power2.out'
+        });
+
+        // Variation cyclique de luminosité (effet vivant)
+        gsap.to(strand, {
+          alpha: 0.6, // Opacité minimale plus élevée
+          duration: 2 + Math.random() * 1,
+          delay: delay + 1,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+
+        // Légère variation d'échelle (souffle)
+        gsap.to(strand.scale, {
+          x: 1.1,
+          y: 1.1,
+          duration: 3 + Math.random() * 2,
+          delay: delay + 1,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut'
+        });
+      }
+
+      // Stocker le container
+      appRef.current.page16Elements.goldenHair = goldenHair;
+
+      console.log('✨ Cheveux dorés propagés sur la table');
+    }, 1000);
+
+    // Stocker les éléments pour nettoyage ultérieur
+    appRef.current.page16Elements = {
+      tears,
+      tearInterval,
+      hairStrands,
+      goldenHair: null // Sera rempli après 1 seconde
+    };
+
+    console.log('✅ Page 16 complète: larmes et cheveux dorés configurés');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 16 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 15) {
+        setShowPage16Text(true);
+
+        requestAnimationFrame(() => {
+          if (page16TextRef.current && currentPageRef.current === 15) {
+            gsap.fromTo(
+              page16TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 2500); // Après 2.5 secondes (temps de voir l'animation)
   };
 
   /**
@@ -2837,6 +4090,46 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 11 interrompue - Notes et particules supprimées');
     }
 
+    // Si on quitte la page 12, supprimer les éléments d'animation
+    if (currentPageRef.current === 11 && appRef.current.page12Elements) {
+      const { particles, particleTimers, witchSprite } = appRef.current.page12Elements;
+
+      // Arrêter le zoom sur le sprite de la page 12
+      const sprite = spritesRef.current[11];
+      if (sprite) {
+        gsap.killTweensOf(sprite);
+        gsap.killTweensOf(sprite.scale);
+      }
+
+      // Arrêter tous les timers de création de particules
+      if (particleTimers) {
+        particleTimers.forEach(timer => clearInterval(timer));
+      }
+
+      // Supprimer les particules
+      if (particles) {
+        particles.forEach(particle => {
+          gsap.killTweensOf(particle);
+          gsap.killTweensOf(particle.scale);
+          particle.destroy();
+        });
+      }
+
+      // Supprimer la sorcière
+      if (witchSprite) {
+        const witch = witchSprite();
+        if (witch) {
+          gsap.killTweensOf(witch);
+          gsap.killTweensOf(witch.scale);
+          witch.destroy();
+        }
+      }
+
+      appRef.current.page12Elements = null;
+      setShowPage12Text(false);
+      console.log('🛑 Animation page 12 interrompue - Zoom, particules et sorcière supprimés');
+    }
+
     // Si on quitte la page 13, supprimer les éléments d'animation
     if (currentPageRef.current === 12 && appRef.current.page13Elements) {
       const { musicNotes, sparkles, musicInterval, sparkleInterval } = appRef.current.page13Elements;
@@ -2901,6 +4194,74 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 14 interrompue - Mots flottants supprimés');
     }
 
+    // Si on quitte la page 15, supprimer les éléments d'animation
+    if (currentPageRef.current === 14 && appRef.current.page15Elements) {
+      const { hearts, heartTimers, windowContainer } = appRef.current.page15Elements;
+
+      // Arrêter tous les timers
+      if (heartTimers) {
+        heartTimers.forEach(timer => {
+          if (typeof timer === 'number') {
+            clearInterval(timer);
+            clearTimeout(timer);
+          }
+        });
+      }
+
+      // Supprimer les cœurs
+      if (hearts) {
+        hearts.forEach(heart => {
+          gsap.killTweensOf(heart);
+          gsap.killTweensOf(heart.scale);
+          if (!heart.destroyed) {
+            heart.destroy();
+          }
+        });
+      }
+
+      // Supprimer le container
+      if (windowContainer && !windowContainer.destroyed) {
+        windowContainer.destroy({ children: true });
+      }
+
+      appRef.current.page15Elements = null;
+      setShowPage15Text(false);
+      console.log('🛑 Animation page 15 interrompue - Cœurs romantiques supprimés');
+    }
+
+    // Si on quitte la page 16, supprimer les éléments d'animation
+    if (currentPageRef.current === 15 && appRef.current.page16Elements) {
+      const { tears, goldenHair, tearInterval, hairStrands } = appRef.current.page16Elements;
+
+      // Arrêter l'intervalle des larmes
+      if (tearInterval) clearInterval(tearInterval);
+
+      // Supprimer les larmes
+      if (tears) {
+        tears.forEach(tear => {
+          gsap.killTweensOf(tear);
+          if (!tear.destroyed) tear.destroy();
+        });
+      }
+
+      // Supprimer les cheveux dorés
+      if (hairStrands) {
+        hairStrands.forEach(strand => {
+          gsap.killTweensOf(strand);
+          gsap.killTweensOf(strand.scale);
+          if (!strand.destroyed) strand.destroy();
+        });
+      }
+
+      if (goldenHair && !goldenHair.destroyed) {
+        goldenHair.destroy({ children: true });
+      }
+
+      appRef.current.page16Elements = null;
+      setShowPage16Text(false);
+      console.log('🛑 Animation page 16 interrompue - Larmes et cheveux dorés supprimés');
+    }
+
     // Si on quitte la page 4, supprimer les éléments d'animation
     if (currentPageRef.current === 3 && appRef.current.page4Elements) {
       const { flowerSprites, flowerContainer, faceOverlay, flowerUpdateTicker, tearDrops, tearTimers } = appRef.current.page4Elements;
@@ -2956,6 +4317,81 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 4 interrompue - Zoom, visage, larmes et fleurs arrêtés');
     }
 
+    // Si on quitte la page 5, supprimer les éléments d'animation
+    if (currentPageRef.current === 4 && appRef.current.page5Elements) {
+      const { shadow, moonContainer, outerGlow, middleGlow, moon } = appRef.current.page5Elements;
+
+      // Supprimer l'ombre
+      if (shadow) {
+        gsap.killTweensOf(shadow);
+        gsap.killTweensOf(shadow.scale);
+        shadow.destroy();
+      }
+
+      // Supprimer la lune et ses animations
+      if (moonContainer) {
+        gsap.killTweensOf(moonContainer);
+      }
+
+      if (outerGlow) {
+        gsap.killTweensOf(outerGlow);
+        gsap.killTweensOf(outerGlow.scale);
+      }
+
+      if (middleGlow) {
+        gsap.killTweensOf(middleGlow);
+      }
+
+      if (moon) {
+        gsap.killTweensOf(moon);
+      }
+
+      if (moonContainer) {
+        moonContainer.destroy({ children: true });
+      }
+
+      appRef.current.page5Elements = null;
+      setShowPage5Text(false);
+      console.log('🛑 Animation page 5 interrompue - Ombre et lune supprimées');
+    }
+
+    // Si on quitte la page 6, supprimer les éléments d'animation
+    if (currentPageRef.current === 5 && appRef.current.page6Elements) {
+      const { flames, embers, glow, emberTimers } = appRef.current.page6Elements;
+
+      // Arrêter tous les timers d'émission de braises
+      if (emberTimers) {
+        emberTimers.forEach(timer => clearInterval(timer));
+      }
+
+      // Supprimer les flammes
+      if (flames) {
+        flames.forEach(flame => {
+          gsap.killTweensOf(flame);
+          gsap.killTweensOf(flame.scale);
+          flame.destroy();
+        });
+      }
+
+      // Supprimer les braises
+      if (embers) {
+        embers.forEach(ember => {
+          gsap.killTweensOf(ember);
+          ember.destroy();
+        });
+      }
+
+      // Supprimer le halo
+      if (glow) {
+        gsap.killTweensOf(glow);
+        glow.destroy();
+      }
+
+      appRef.current.page6Elements = null;
+      setShowPage6Text(false);
+      console.log('🛑 Animation page 6 interrompue - Feu de cheminée supprimé');
+    }
+
     // Si on va vers la page 1, afficher le titre
     if (pageIndex === 0) {
       setShowTitle(true);
@@ -2974,6 +4410,16 @@ const PixiBDViewer = () => {
     // Si on va vers la page 4, masquer le texte (il sera réaffiché par playPage4Animation)
     if (pageIndex === 3) {
       setShowPage4Text(false);
+    }
+
+    // Si on va vers la page 5, masquer le texte (il sera réaffiché par playPage5Animation)
+    if (pageIndex === 4) {
+      setShowPage5Text(false);
+    }
+
+    // Si on va vers la page 6, masquer le texte (il sera réaffiché par playPage6Animation)
+    if (pageIndex === 5) {
+      setShowPage6Text(false);
     }
 
     // Si on va vers la page 7, masquer le texte (il sera réaffiché par playPage7Animation)
@@ -3001,6 +4447,11 @@ const PixiBDViewer = () => {
       setShowPage11Text(false);
     }
 
+    // Si on va vers la page 12, masquer le texte (il sera réaffiché par playPage12Animation)
+    if (pageIndex === 11) {
+      setShowPage12Text(false);
+    }
+
     // Si on va vers la page 13, masquer le texte (il sera réaffiché par playPage13Animation)
     if (pageIndex === 12) {
       setShowPage13Text(false);
@@ -3009,6 +4460,16 @@ const PixiBDViewer = () => {
     // Si on va vers la page 14, masquer le texte (il sera réaffiché par playPage14Animation)
     if (pageIndex === 13) {
       setShowPage14Text(false);
+    }
+
+    // Si on va vers la page 15, masquer le texte (il sera réaffiché par playPage15Animation)
+    if (pageIndex === 14) {
+      setShowPage15Text(false);
+    }
+
+    // Si on va vers la page 16, masquer le texte (il sera réaffiché par playPage16Animation)
+    if (pageIndex === 15) {
+      setShowPage16Text(false);
     }
 
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
@@ -3043,6 +4504,16 @@ const PixiBDViewer = () => {
           playPage4Animation();
         }
 
+        // Si on arrive sur la page 5, démarrer l'animation de l'ombre floue
+        if (pageIndex === 4) {
+          playPage5Animation();
+        }
+
+        // Si on arrive sur la page 6, démarrer l'animation du feu de cheminée
+        if (pageIndex === 5) {
+          playPage6Animation();
+        }
+
         // Si on arrive sur la page 7, démarrer l'animation de la magicienne
         if (pageIndex === 6) {
           playPage7Animation();
@@ -3068,6 +4539,11 @@ const PixiBDViewer = () => {
           playPage11Animation();
         }
 
+        // Si on arrive sur la page 12, démarrer l'animation du zoom sur la tour
+        if (pageIndex === 11) {
+          playPage12Animation();
+        }
+
         // Si on arrive sur la page 13, démarrer l'animation des notes dorées et particules brillantes
         if (pageIndex === 12) {
           playPage13Animation();
@@ -3076,6 +4552,16 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 14, démarrer l'animation de l'effet poétique de chant
         if (pageIndex === 13) {
           playPage14Animation();
+        }
+
+        // Si on arrive sur la page 15, démarrer l'animation des cœurs romantiques
+        if (pageIndex === 14) {
+          playPage15Animation();
+        }
+
+        // Si on arrive sur la page 16, démarrer l'animation des larmes et cheveux dorés
+        if (pageIndex === 15) {
+          playPage16Animation();
         }
       }
     });
@@ -3302,6 +4788,36 @@ const PixiBDViewer = () => {
         </div>
       )}
 
+      {/* Texte narratif (page 5 uniquement) */}
+      {!isLoading && showPage5Text && currentPageRef.current === 4 && (
+        <div ref={page5TextRef} className="page5-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              "Hélas, faites-moi grâce ! Mon épouse est enceinte et serait morte si elle n'avait pas pu en manger."
+              <br /><br />
+              La magicienne laissa tomber son courroux :
+              <br />
+              "Prends-en autant que tu voudras, mais tu dois me donner l'enfant que ta femme mettra au monde."
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 6 uniquement) */}
+      {!isLoading && showPage6Text && currentPageRef.current === 5 && (
+        <div ref={page6TextRef} className="page6-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              "Si je ne peux manger de ces raiponces, alors je mourrai !" dit-elle à son mari.
+              <br /><br />
+              L'homme qui aimait sa femme pensa : "Va lui chercher des raiponces quoiqu'il puisse t'en coûter."
+              <br /><br />
+              Lorsque le crépuscule arriva, il escalada le mur, cueillit rapidement une pleine poignée et les rapporta.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Texte narratif (page 7 uniquement) */}
       {!isLoading && showPage7Text && currentPageRef.current === 6 && (
         <div ref={page7TextRef} className="page7-narrative-overlay">
@@ -3363,6 +4879,21 @@ const PixiBDViewer = () => {
         </div>
       )}
 
+      {/* Texte narratif (page 12 uniquement) */}
+      {!isLoading && showPage12Text && currentPageRef.current === 11 && (
+        <div ref={page12TextRef} className="page12-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Quand la magicienne voulait entrer, elle se tenait au bas et appelait :
+              <br />
+              "Raiponce, Raiponce, dénoue et lance vers moi tes cheveux !"
+              <br /><br />
+              Raiponce dénouait alors ses nattes et les laissait tomber vingt pieds plus bas.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Texte narratif (page 13 uniquement) */}
       {!isLoading && showPage13Text && currentPageRef.current === 12 && (
         <div ref={page13TextRef} className="page13-narrative-overlay">
@@ -3380,6 +4911,36 @@ const PixiBDViewer = () => {
           <div className="narrative-box">
             <p className="narrative-text">
               Le chant l'avait tellement touché que chaque jour il partait pour les bois l'écouter. Un jour, il vit la magicienne et entendit les mots magiques. "Est-ce l'échelle par laquelle on y parvient ? Alors je veux aussi tenter ma chance !" Le lendemain, il appela à son tour.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 15 uniquement) */}
+      {!isLoading && showPage15Text && currentPageRef.current === 14 && (
+        <div ref={page15TextRef} className="page15-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Au début, Raiponce fut horriblement effrayée qu'un homme vînt jusqu'à elle.
+              <br /><br />
+              Mais le prince lui parla amicalement et lui raconta que son cœur avait été si ému par son chant qu'il se devait de la rencontrer.
+              <br /><br />
+              "Veux-tu m'avoir pour époux ?" demanda-t-il.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 16 uniquement) */}
+      {!isLoading && showPage16Text && currentPageRef.current === 15 && (
+        <div ref={page16TextRef} className="page16-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Raiponce vit qu'il était jeune et beau. "Je veux bien venir avec toi, dit-elle, mais j'ignore comment descendre.
+              <br /><br />
+              Apporte un écheveau de soie dont je ferai une échelle."
+              <br /><br />
+              Ils convinrent qu'il viendrait tous les soirs car le jour venait la vieille.
             </p>
           </div>
         </div>
