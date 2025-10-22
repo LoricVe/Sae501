@@ -3662,7 +3662,7 @@ const PixiBDViewer = () => {
 
     // === 1. SYSTÈME DE LARMES ===
     const createTear = () => {
-      if (currentPageRef.current !== 16) return;
+      if (currentPageRef.current !== 15) return;
 
       const tear = new PIXI.Graphics();
       const size = 4 + Math.random() * 3;
@@ -3730,7 +3730,7 @@ const PixiBDViewer = () => {
 
     // Créer des larmes régulièrement
     const tearInterval = setInterval(() => {
-      if (currentPageRef.current === 16) {
+      if (currentPageRef.current === 15) {
         createTear();
       }
     }, tearConfig.frequency);
@@ -3739,10 +3739,10 @@ const PixiBDViewer = () => {
 
     // === 2. CHEVEUX DORÉS SUR LA TABLE (après 1 seconde) ===
     setTimeout(() => {
-      if (currentPageRef.current !== 16) return;
+      if (currentPageRef.current !== 15) return;
 
       console.log('✨ Début de la propagation des cheveux dorés');
-
+      
       const goldenHair = new PIXI.Container();
       goldenHair.x = app.screen.width * hairConfig.tableX;
       goldenHair.y = app.screen.height * hairConfig.tableY;
