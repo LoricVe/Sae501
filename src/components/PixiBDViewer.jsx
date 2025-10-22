@@ -3648,8 +3648,8 @@ const PixiBDViewer = () => {
 
     // === CONFIGURATION ===
     const tearConfig = {
-      x: 0.5,      // Position horizontale du visage
-      y: 0.3,      // Position verticale du visage
+      x: 0.46,      // Position horizontale du visage
+      y: 0.35,      // Position verticale du visage
       frequency: 800 // Un larme toutes les 800ms
     };
 
@@ -3662,7 +3662,7 @@ const PixiBDViewer = () => {
 
     // === 1. SYSTÈME DE LARMES ===
     const createTear = () => {
-      if (currentPageRef.current !== 15) return;
+      if (currentPageRef.current !== 16) return;
 
       const tear = new PIXI.Graphics();
       const size = 4 + Math.random() * 3;
@@ -3730,7 +3730,7 @@ const PixiBDViewer = () => {
 
     // Créer des larmes régulièrement
     const tearInterval = setInterval(() => {
-      if (currentPageRef.current === 15) {
+      if (currentPageRef.current === 16) {
         createTear();
       }
     }, tearConfig.frequency);
@@ -3739,7 +3739,7 @@ const PixiBDViewer = () => {
 
     // === 2. CHEVEUX DORÉS SUR LA TABLE (après 1 seconde) ===
     setTimeout(() => {
-      if (currentPageRef.current !== 15) return;
+      if (currentPageRef.current !== 16) return;
 
       console.log('✨ Début de la propagation des cheveux dorés');
 
