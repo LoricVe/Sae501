@@ -38,6 +38,7 @@ const PixiBDViewer = () => {
   const [showPage15Text, setShowPage15Text] = useState(false);
   const [showPage16Text, setShowPage16Text] = useState(false);
   const [showPage17Text, setShowPage17Text] = useState(false);
+  const [showPage18Text, setShowPage18Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
@@ -54,6 +55,7 @@ const PixiBDViewer = () => {
   const page15TextRef = useRef(null);
   const page16TextRef = useRef(null);
   const page17TextRef = useRef(null);
+  const page18TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -4169,6 +4171,196 @@ const PixiBDViewer = () => {
   };
 
   /**
+   * ✨ PAGE 18: Animation de cheveux dorés qui tombent doucement
+   */
+  const playPage18Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 17) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('✨ Démarrage animation page 18 - Cheveux dorés qui tombent');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page18Elements) {
+      console.log('⚠️ Éléments page 18 existent déjà, suppression...');
+      const { hairStrands, hairInterval } = appRef.current.page18Elements;
+
+      // Arrêter l'intervalle
+      if (hairInterval) clearInterval(hairInterval);
+
+      // Supprimer les cheveux
+      if (hairStrands) {
+        hairStrands.forEach(hair => {
+          gsap.killTweensOf(hair);
+          gsap.killTweensOf(hair.scale);
+          if (!hair.destroyed) {
+            animationLayerRef.current.removeChild(hair);
+            hair.destroy();
+          }
+        });
+      }
+
+      appRef.current.page18Elements = null;
+    }
+
+    const hairStrands = [];
+
+    // === FONCTION POUR CRÉER UNE MÈCHE DE CHEVEUX ===
+    const createHairStrand = () => {
+      if (currentPageRef.current !== 17) return;
+
+      const hair = new PIXI.Graphics();
+
+      // Dimensions aléatoires (longueur entre 25 et 40 px)
+      const length = 25 + Math.random() * 15;
+      const width = 1 + Math.random(); // Largeur fine (1-2 px)
+
+      // Dessiner une ligne fine dorée (cheveu)
+      hair.moveTo(0, 0);
+      hair.lineTo(0, length);
+      hair.stroke({
+        width: width,
+        color: 0xffd700, // Or chaud
+        alpha: 0.7 + Math.random() * 0.3 // Opacité variable (0.7-1.0)
+      });
+
+      // Position de départ (en haut de l'écran, position horizontale aléatoire)
+      hair.x = Math.random() * app.screen.width;
+      hair.y = -50;
+      hair.alpha = 0;
+
+      // Échelle aléatoire pour effet de profondeur
+      const scale = 0.6 + Math.random() * 0.6; // Entre 0.6 et 1.2
+      hair.scale.set(scale);
+
+      // Filtre de flou léger pour effet doux
+      const blurFilter = new PIXI.BlurFilter();
+      blurFilter.blur = 2;
+      hair.filters = [blurFilter];
+
+      animationLayerRef.current.addChild(hair);
+      hairStrands.push(hair);
+
+      // === PARAMÈTRES DE L'ANIMATION ===
+      // Plus petit = tombe plus vite (arrière-plan), plus grand = tombe lentement (avant-plan)
+      const fallSpeed = scale < 0.9 ? 6 + Math.random() * 2 : 8 + Math.random() * 4; // 6-8s ou 8-12s
+      const targetY = app.screen.height + 100;
+
+      // Oscillation latérale (amplitude selon la profondeur)
+      const oscillationAmplitude = 30 + Math.random() * 50;
+      const oscillationSpeed = 2 + Math.random() * 2;
+
+      // Rotation
+      const rotationAmount = (Math.random() - 0.5) * Math.PI * 0.5; // Rotation légère (-90° à +90°)
+
+      // === ANIMATION D'APPARITION ===
+      gsap.to(hair, {
+        alpha: 0.7 + Math.random() * 0.3,
+        duration: 0.8,
+        ease: 'power2.out'
+      });
+
+      // === ANIMATION DE CHUTE VERTICALE ===
+      gsap.to(hair, {
+        y: targetY,
+        duration: fallSpeed,
+        ease: 'sine.in',
+        onComplete: () => {
+          // Supprimer le cheveu
+          gsap.killTweensOf(hair);
+          gsap.killTweensOf(hair.scale);
+          const index = hairStrands.indexOf(hair);
+          if (index > -1) hairStrands.splice(index, 1);
+          if (!hair.destroyed) {
+            animationLayerRef.current.removeChild(hair);
+            hair.destroy();
+          }
+        }
+      });
+
+      // === ANIMATION D'OSCILLATION HORIZONTALE (effet de vent) ===
+      gsap.to(hair, {
+        x: hair.x + (Math.random() - 0.5) * oscillationAmplitude,
+        duration: oscillationSpeed,
+        ease: 'sine.inOut',
+        repeat: Math.ceil(fallSpeed / oscillationSpeed),
+        yoyo: true
+      });
+
+      // === ANIMATION DE ROTATION DOUCE ===
+      gsap.to(hair, {
+        rotation: rotationAmount,
+        duration: fallSpeed,
+        ease: 'sine.inOut'
+      });
+
+      // === FADE OUT PROGRESSIF VERS LA FIN ===
+      gsap.to(hair, {
+        alpha: 0,
+        duration: fallSpeed * 0.3,
+        delay: fallSpeed * 0.7,
+        ease: 'power2.in'
+      });
+
+      console.log('✨ Mèche de cheveux créée');
+    };
+
+    // === CRÉATION CONTINUE DE CHEVEUX ===
+    // Créer plusieurs cheveux immédiatement
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        if (currentPageRef.current === 17) {
+          createHairStrand();
+        }
+      }, i * 400); // Échelonner les apparitions (0, 400ms, 800ms, etc.)
+    }
+
+    // Puis créer des cheveux régulièrement
+    const hairInterval = setInterval(() => {
+      if (currentPageRef.current === 17) {
+        createHairStrand();
+      } else {
+        clearInterval(hairInterval);
+      }
+    }, 800); // Un cheveu toutes les 800ms
+
+    // Stocker les références pour nettoyage ultérieur
+    appRef.current.page18Elements = {
+      hairStrands,
+      hairInterval
+    };
+
+    console.log('✅ Page 18 complète: cheveux dorés flottants configurés');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 18 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 17) {
+        setShowPage18Text(true);
+
+        requestAnimationFrame(() => {
+          if (page18TextRef.current && currentPageRef.current === 17) {
+            gsap.fromTo(
+              page18TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
    * Reset du zoom et de la position d'un sprite (utilisé lors du changement de page)
    * Mode "cover" : remplit tout l'écran
    */
@@ -4615,6 +4807,30 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 17 interrompue - Orage supprimé');
     }
 
+    // Si on quitte la page 18, supprimer les éléments d'animation
+    if (currentPageRef.current === 17 && appRef.current.page18Elements) {
+      const { hairStrands, hairInterval } = appRef.current.page18Elements;
+
+      // Arrêter l'intervalle
+      if (hairInterval) clearInterval(hairInterval);
+
+      // Supprimer les cheveux
+      if (hairStrands) {
+        hairStrands.forEach(hair => {
+          gsap.killTweensOf(hair);
+          gsap.killTweensOf(hair.scale);
+          if (!hair.destroyed) {
+            animationLayerRef.current.removeChild(hair);
+            hair.destroy();
+          }
+        });
+      }
+
+      appRef.current.page18Elements = null;
+      setShowPage18Text(false);
+      console.log('🛑 Animation page 18 interrompue - Cheveux dorés supprimés');
+    }
+
     // Si on quitte la page 4, supprimer les éléments d'animation
     if (currentPageRef.current === 3 && appRef.current.page4Elements) {
       const { flowerSprites, flowerContainer, faceOverlay, flowerUpdateTicker, tearDrops, tearTimers } = appRef.current.page4Elements;
@@ -4830,6 +5046,11 @@ const PixiBDViewer = () => {
       setShowPage17Text(false);
     }
 
+    // Si on va vers la page 18, masquer le texte (il sera réaffiché par playPage18Animation)
+    if (pageIndex === 17) {
+      setShowPage18Text(false);
+    }
+
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
     resetSpriteTransform(nextSprite);
 
@@ -4925,6 +5146,11 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 17, démarrer l'animation de l'orage
         if (pageIndex === 16) {
           playPage17Animation();
+        }
+
+        // Si on arrive sur la page 18, démarrer l'animation des cheveux dorés
+        if (pageIndex === 17) {
+          playPage18Animation();
         }
       }
     });
@@ -5319,6 +5545,17 @@ const PixiBDViewer = () => {
               Mais tandis qu'il grimpait au mur, il fut brusquement effrayé car il aperçut la magicienne qui se tenait devant lui.
               <br /><br />
               « Comment peux-tu te risquer à pénétrer dans mon jardin et à me voler mes raiponces comme un brigand ? » dit-elle avec courroux.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 18 uniquement) */}
+      {!isLoading && showPage18Text && currentPageRef.current === 17 && (
+        <div ref={page18TextRef} className="page18-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              En un clin d'œil, les splendides tresses furent étalées sur le sol. La magicienne fut si impitoyable qu'elle exila Raiponce dans une contrée désertique où elle dut vivre dans la privation et la peine.
             </p>
           </div>
         </div>
