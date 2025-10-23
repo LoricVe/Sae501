@@ -5364,7 +5364,7 @@ const PixiBDViewer = () => {
           </div>
         </div>
       )}
-
+       
       {/* Texte narratif (page 4 uniquement) */}
       {!isLoading && showPage4Text && currentPageRef.current === 3 && (
         <div ref={page4TextRef} className="page4-narrative-overlay">
@@ -5392,7 +5392,7 @@ const PixiBDViewer = () => {
         </div>
       )}
 
-      {/* Texte narratif (page 6 uniquement) */}
+      {/* Texte narratif (page 6 uniquement)kkkk */}
       {!isLoading && showPage6Text && currentPageRef.current === 5 && (
         <div ref={page6TextRef} className="page6-narrative-overlay">
           <div className="narrative-box">
