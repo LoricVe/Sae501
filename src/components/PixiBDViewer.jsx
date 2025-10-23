@@ -41,6 +41,7 @@ const PixiBDViewer = () => {
   const [showPage18Text, setShowPage18Text] = useState(false);
   const [showPage19Text, setShowPage19Text] = useState(false);
   const [showPage20Text, setShowPage20Text] = useState(false);
+  const [showPage21Text, setShowPage21Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
@@ -60,6 +61,7 @@ const PixiBDViewer = () => {
   const page18TextRef = useRef(null);
   const page19TextRef = useRef(null);
   const page20TextRef = useRef(null);
+  const page21TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -1668,6 +1670,263 @@ const PixiBDViewer = () => {
   };
 
   /**
+   * Animation spécifique pour la page 21 : zoom vers la gauche + cœur lumineux + particules
+   */
+  const playPage21Animation = async () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 20) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+    console.log('💖 Démarrage animation page 21 - Fin heureuse');
+
+    // Nettoyage si déjà existant
+    if (appRef.current.page21Elements) {
+      console.log('⚠️ Éléments page 21 existent déjà, suppression...');
+      const { heartSprite, particles, particleTimers } = appRef.current.page21Elements;
+
+      if (particleTimers) {
+        particleTimers.forEach(timer => clearInterval(timer));
+      }
+
+      if (heartSprite) {
+        gsap.killTweensOf(heartSprite);
+        gsap.killTweensOf(heartSprite.scale);
+        heartSprite.destroy();
+      }
+
+      if (particles) {
+        particles.forEach(particle => {
+          gsap.killTweensOf(particle);
+          particle.destroy();
+        });
+      }
+
+      appRef.current.page21Elements = null;
+    }
+
+    const sprite = spritesRef.current[20];
+    if (!sprite) return;
+
+    // 1. Zoom progressif vers la gauche (2 secondes)
+    gsap.to(sprite, {
+      x: sprite.x + app.screen.width * 0.15, // Translation vers la droite pour voir la gauche de l'image
+      duration: 2,
+      ease: 'power2.inOut'
+    });
+
+    gsap.to(sprite.scale, {
+      x: sprite.scale.x * 1.3,
+      y: sprite.scale.y * 1.3,
+      duration: 2,
+      ease: 'power2.inOut'
+    });
+
+    // 2. Créer un cœur qui entoure les têtes des personnages
+    const heart = new PIXI.Graphics();
+
+    // Dessiner un grand cœur avec contour épais (les personnages seront à l'intérieur)
+    const heartSize = 140; // Taille ajustée pour bien entourer les têtes
+    const heartColor = 0xFF1493; // Rose profond
+    const glowColor = 0xFFFFFF; // Blanc pour l'effet glow
+
+    // Cœur créé avec une forme vectorielle plus réaliste (contour seulement)
+    // Partie gauche supérieure (premier lobe)
+    heart.moveTo(0, -heartSize * 0.25);
+    heart.bezierCurveTo(
+      -heartSize * 0.25, -heartSize * 0.75,  // Point de contrôle 1
+      -heartSize * 0.75, -heartSize * 0.75,  // Point de contrôle 2
+      -heartSize * 0.75, -heartSize * 0.25   // Point final (sommet gauche)
+    );
+
+    // Partie gauche inférieure
+    heart.bezierCurveTo(
+      -heartSize * 0.75, heartSize * 0.1,    // Point de contrôle 1
+      -heartSize * 0.5, heartSize * 0.5,     // Point de contrôle 2
+      0, heartSize * 0.9                      // Point final (pointe du bas)
+    );
+
+    // Partie droite inférieure
+    heart.bezierCurveTo(
+      heartSize * 0.5, heartSize * 0.5,      // Point de contrôle 1
+      heartSize * 0.75, heartSize * 0.1,     // Point de contrôle 2
+      heartSize * 0.75, -heartSize * 0.25    // Point final (sommet droit)
+    );
+
+    // Partie droite supérieure (deuxième lobe)
+    heart.bezierCurveTo(
+      heartSize * 0.75, -heartSize * 0.75,   // Point de contrôle 1
+      heartSize * 0.25, -heartSize * 0.75,   // Point de contrôle 2
+      0, -heartSize * 0.25                    // Retour au début (creux du milieu)
+    );
+
+    // Dessiner uniquement le contour (pas de remplissage)
+    heart.stroke({ color: heartColor, width: 10, alpha: 1 });
+
+    // Position du cœur pour centrer sur le couple (ajustable selon l'image)
+    heart.x = app.screen.width * 0.55;
+    heart.y = app.screen.height * 0.38;
+    heart.alpha = 0;
+    heart.scale.set(0);
+
+    // Ajouter au calque d'animation
+    animationLayerRef.current.addChild(heart);
+
+    // 3. Apparition du cœur après le zoom (délai de 2 secondes)
+    setTimeout(() => {
+      if (currentPageRef.current !== 20) return;
+
+      // Animation d'apparition du cœur (1 seconde)
+      gsap.to(heart, {
+        alpha: 1,
+        duration: 1,
+        ease: 'power2.out'
+      });
+
+      gsap.to(heart.scale, {
+        x: 1,
+        y: 1,
+        duration: 1,
+        ease: 'back.out(1.7)'
+      });
+
+      // Pulsation douce du cœur
+      gsap.to(heart.scale, {
+        x: 1.1,
+        y: 1.1,
+        duration: 0.8,
+        yoyo: true,
+        repeat: -1,
+        ease: 'sine.inOut',
+        delay: 1
+      });
+
+      // 4. Créer des particules lumineuses autour du cœur
+      const particles = [];
+      const particleTimers = [];
+
+      const createParticle = () => {
+        if (currentPageRef.current !== 20 || !animationLayerRef.current) return;
+
+        const particle = new PIXI.Graphics();
+        const size = 2 + Math.random() * 4;
+        const particleColor = Math.random() > 0.5 ? 0xFFD700 : 0xFFFFFF; // Or ou blanc
+
+        particle.circle(0, 0, size);
+        particle.fill({ color: particleColor, alpha: 0.8 });
+
+        // Position de départ : autour du cœur
+       
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 80 + Math.random() * 40;
+        particle.x = heart.x + Math.cos(angle) * radius;
+        particle.y = heart.y + Math.sin(angle) * radius;
+        particle.alpha = 0;
+
+        animationLayerRef.current.addChild(particle);
+        particles.push(particle);
+
+        // Animation de la particule : monte et disparaît
+        const targetAngle = angle + (Math.random() - 0.5) * Math.PI * 0.5;
+        const targetRadius = radius + 100 + Math.random() * 100;
+        const duration = 2 + Math.random() * 1.5;
+
+        gsap.to(particle, {
+          alpha: 1,
+          duration: 0.3,
+          ease: 'power2.in'
+        });
+
+        gsap.to(particle, {
+          x: heart.x + Math.cos(targetAngle) * targetRadius,
+          y: heart.y + Math.sin(targetAngle) * targetRadius,
+          alpha: 0,
+          duration: duration,
+          ease: 'power1.out',
+          onComplete: () => {
+            particle.destroy();
+            const index = particles.indexOf(particle);
+            if (index > -1) particles.splice(index, 1);
+          }
+        });
+      };
+
+      // Démarrer l'émission de particules
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => createParticle(), i * 200);
+      }
+
+      const particleInterval = setInterval(() => {
+        if (currentPageRef.current === 20) {
+          createParticle();
+        }
+      }, 500);
+
+      particleTimers.push(particleInterval);
+
+      // 5. Maintien pendant 5 secondes, puis dézoom (6 secondes après apparition du cœur)
+      setTimeout(() => {
+        if (currentPageRef.current !== 20) return;
+
+        // Arrêter l'émission de particules
+        particleTimers.forEach(timer => clearInterval(timer));
+
+        // Faire disparaître le cœur progressivement
+        gsap.to(heart, {
+          alpha: 0,
+          duration: 1.5,
+          ease: 'power2.in'
+        });
+
+        gsap.to(heart.scale, {
+          x: 0.5,
+          y: 0.5,
+          duration: 1.5,
+          ease: 'power2.in'
+        });
+
+        // Dézoom et recentrage (2 secondes)
+        gsap.to(sprite, {
+          x: sprite.x - app.screen.width * 0.15,
+          duration: 2,
+          ease: 'power2.inOut'
+        });
+
+        gsap.to(sprite.scale, {
+          x: sprite.scale.x / 1.3,
+          y: sprite.scale.y / 1.3,
+          duration: 2,
+          ease: 'power2.inOut'
+        });
+      }, 6000);
+
+      // Stocker les références pour le nettoyage
+      appRef.current.page21Elements = {
+        heartSprite: heart,
+        particles,
+        particleTimers
+      };
+    }, 2000);
+
+    // Afficher le texte narratif après 500ms
+    setTimeout(() => {
+      if (currentPageRef.current === 20) {
+        setShowPage21Text(true);
+
+        setTimeout(() => {
+          if (page21TextRef.current) {
+            gsap.fromTo(
+              page21TextRef.current,
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 1.5, ease: 'power2.out' }
+            );
+          }
+        }, 50);
+      }
+    }, 500);
+  };
+
+  /**
    * Animation spécifique pour la page 6 : feu de cheminée animé + texte narratif
    */
   const playPage6Animation = () => {
@@ -3035,10 +3294,10 @@ const PixiBDViewer = () => {
     // === CONFIGURATION DU ZOOM CINÉMATIQUE ===
     // 🎨 AJUSTE CES VALEURS pour cibler la fenêtre de la tour
     const zoomConfig = {
-      targetScale: 1.7,     // Niveau de zoom (1.7 = 170% de la taille)
+      targetScale: 1.3,     // Niveau de zoom (1.7 = 170% de la taille)
       offsetX: -30,         // Décalage horizontal
       offsetY: 100,         // Décalage vertical (positif = vers le bas, pour la tour)
-      zoomDuration: 1.5,    // Durée du zoom rapide vers le haut
+      zoomDuration: 3,    // Durée du zoom rapide vers le haut
       panDownDuration: 2,   // Durée du panoramique vers le bas
       dezoomDuration: 2     // Durée du dézoom final
     };
@@ -5460,6 +5719,37 @@ const PixiBDViewer = () => {
       setShowPage20Text(false);
     }
 
+    // Si on quitte la page 21, supprimer les éléments d'animation
+    if (currentPageRef.current === 20 && appRef.current.page21Elements) {
+      const { heartSprite, particles, particleTimers } = appRef.current.page21Elements;
+
+      if (particleTimers) {
+        particleTimers.forEach(timer => clearInterval(timer));
+      }
+
+      if (heartSprite) {
+        gsap.killTweensOf(heartSprite);
+        gsap.killTweensOf(heartSprite.scale);
+        heartSprite.destroy();
+      }
+
+      if (particles) {
+        particles.forEach(particle => {
+          gsap.killTweensOf(particle);
+          particle.destroy();
+        });
+      }
+
+      appRef.current.page21Elements = null;
+      setShowPage21Text(false);
+      console.log('🛑 Animation page 21 interrompue - Cœur et particules supprimés');
+    }
+
+    // Si on va vers la page 21, masquer le texte (il sera réaffiché par playPage21Animation)
+    if (pageIndex === 20) {
+      setShowPage21Text(false);
+    }
+
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
     resetSpriteTransform(nextSprite);
 
@@ -5570,6 +5860,11 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 20, démarrer l'animation du rosier et des pétales
         if (pageIndex === 19) {
           playPage20Animation();
+        }
+
+        // Si on arrive sur la page 21, démarrer l'animation de la fin heureuse
+        if (pageIndex === 20) {
+          playPage21Animation();
         }
       }
     });
@@ -5997,6 +6292,17 @@ const PixiBDViewer = () => {
           <div className="narrative-box">
             <p className="narrative-text">
               Le prince, envahi par la douleur, bondit par la fenêtre de désespoir. Il survécut mais les épines du bosquet lui crevèrent les yeux. Il erra aveugle dans la forêt, ne mangeant que racines et baies, pleurant la perte de sa bien-aimée.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 21 uniquement) */}
+      {!isLoading && showPage21Text && currentPageRef.current === 20 && (
+        <div ref={page21TextRef} className="page21-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Après quelques années misérables, il atteignit la contrée déserte où Raiponce survivait avec les jumeaux qu'elle avait mis au monde. Elle le reconnut et se pendit à son cou en pleurant. Deux de ses larmes tombèrent dans ses yeux et il recouvra la vue. Il l'emmena dans son royaume où ils vécurent longtemps heureux et sereins.
             </p>
           </div>
         </div>
