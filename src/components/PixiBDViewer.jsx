@@ -37,6 +37,7 @@ const PixiBDViewer = () => {
   const [showPage14Text, setShowPage14Text] = useState(false);
   const [showPage15Text, setShowPage15Text] = useState(false);
   const [showPage16Text, setShowPage16Text] = useState(false);
+  const [showPage17Text, setShowPage17Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
@@ -52,6 +53,7 @@ const PixiBDViewer = () => {
   const page14TextRef = useRef(null);
   const page15TextRef = useRef(null);
   const page16TextRef = useRef(null);
+  const page17TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -3849,6 +3851,324 @@ const PixiBDViewer = () => {
   };
 
   /**
+   * 🌩️ PAGE 17: Animation d'orage avec éclairs et tremblement de caméra
+   */
+  const playPage17Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 16) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+
+    console.log('⚡ Démarrage animation page 17 - Orage avec éclairs et tremblement');
+
+    // FORCER la destruction si existe déjà
+    if (appRef.current.page17Elements) {
+      console.log('⚠️ Éléments page 17 existent déjà, suppression...');
+      const { lightningFlash, halo, sprite } = appRef.current.page17Elements;
+
+      // Arrêter les animations GSAP
+      if (lightningFlash) {
+        gsap.killTweensOf(lightningFlash);
+        if (!lightningFlash.destroyed) {
+          animationLayerRef.current.removeChild(lightningFlash);
+          lightningFlash.destroy();
+        }
+      }
+
+      if (halo) {
+        gsap.killTweensOf(halo);
+        if (!halo.destroyed) {
+          animationLayerRef.current.removeChild(halo);
+          halo.destroy();
+        }
+      }
+
+      if (sprite) {
+        gsap.killTweensOf(sprite);
+        gsap.killTweensOf(sprite.position);
+      }
+
+      appRef.current.page17Elements = null;
+    }
+
+    const sprite = spritesRef.current[16]; // Sprite de la page 17
+    if (!sprite) return;
+
+    // Sauvegarder la position initiale du sprite
+    const originalX = sprite.x;
+    const originalY = sprite.y;
+
+    // === 1. CALQUE D'ÉCLAIR BLANC (flash global) ===
+    const lightningFlash = new PIXI.Graphics();
+    lightningFlash.rect(0, 0, app.screen.width, app.screen.height);
+    lightningFlash.fill({ color: 0xFFFFFF, alpha: 1 });
+    lightningFlash.alpha = 0;
+    animationLayerRef.current.addChild(lightningFlash);
+
+    // === 2. HALO BLEU/VIOLET (effet cinématique) ===
+    const halo = new PIXI.Graphics();
+
+    // Créer un rectangle avec dégradé radial simulé (bords colorés)
+    const haloSize = Math.max(app.screen.width, app.screen.height) * 1.5;
+    halo.rect(-haloSize / 2, -haloSize / 2, haloSize, haloSize);
+    halo.fill({ color: 0x6B5BFF, alpha: 0.3 }); // Violet/bleu
+
+    halo.x = app.screen.width / 2;
+    halo.y = app.screen.height / 2;
+    halo.alpha = 0;
+    halo.blendMode = 'add'; // Mode de fusion additif pour effet de lumière
+
+    // Appliquer un blur pour simuler le dégradé
+    const haloBlur = new PIXI.BlurFilter();
+    haloBlur.blur = 150;
+    halo.filters = [haloBlur];
+
+    animationLayerRef.current.addChild(halo);
+
+    // === 3. FONCTION POUR DESSINER UN ÉCLAIR ZIGZAG ===
+    const createLightningBolt = () => {
+      const bolt = new PIXI.Graphics();
+
+      // Position de départ (haut de l'écran, position aléatoire)
+      const startX = app.screen.width * (0.3 + Math.random() * 0.4);
+      const startY = 0;
+      const endY = app.screen.height * (0.5 + Math.random() * 0.3);
+
+      // Créer le zigzag
+      const segments = 8 + Math.floor(Math.random() * 5); // 8-12 segments
+      let currentX = startX;
+      let currentY = startY;
+
+      bolt.moveTo(currentX, currentY);
+
+      for (let i = 0; i < segments; i++) {
+        const nextY = startY + (endY - startY) * ((i + 1) / segments);
+        const zigzagOffset = (Math.random() - 0.5) * 60; // Déviation horizontale
+        const nextX = startX + zigzagOffset;
+
+        bolt.lineTo(nextX, nextY);
+        currentX = nextX;
+        currentY = nextY;
+      }
+
+      // Style de l'éclair
+      bolt.stroke({
+        width: 3 + Math.random() * 2,
+        color: 0xFFFFFF,
+        alpha: 1
+      });
+
+      // Ajouter un glow
+      const boltGlow = new PIXI.BlurFilter();
+      boltGlow.blur = 8;
+      bolt.filters = [boltGlow];
+      bolt.alpha = 0;
+
+      animationLayerRef.current.addChild(bolt);
+
+      return bolt;
+    };
+
+    // === 4. FONCTION DE CRÉATION D'UN ÉCLAIR ===
+    const createLightning = (intensity = 'normal') => {
+      if (currentPageRef.current !== 16) return;
+
+      const isStrong = intensity === 'strong';
+      const flashOpacity = isStrong ? 0.6 : 0.4;
+      const flashDuration = isStrong ? 0.15 : 0.1;
+      const multiFlash = isStrong ? Math.random() > 0.4 : false; // Éclairs multiples pour les forts
+
+      // Créer l'éclair visuel (zigzag) qui descend
+      const lightningBolt = createLightningBolt();
+
+      // Animation de l'éclair qui apparaît puis disparaît rapidement
+      gsap.to(lightningBolt, {
+        alpha: 0.9,
+        duration: 0.05,
+        ease: 'power2.out',
+        onComplete: () => {
+          // L'éclair reste visible un instant
+          gsap.to(lightningBolt, {
+            alpha: 0,
+            duration: 0.1,
+            ease: 'power2.in',
+            onComplete: () => {
+              // Détruire l'éclair après l'animation
+              if (!lightningBolt.destroyed) {
+                animationLayerRef.current.removeChild(lightningBolt);
+                lightningBolt.destroy();
+              }
+            }
+          });
+        }
+      });
+
+      // Flash blanc global (légèrement après l'éclair visuel)
+      setTimeout(() => {
+        gsap.to(lightningFlash, {
+          alpha: flashOpacity,
+          duration: 0.05,
+          ease: 'power2.out',
+          onComplete: () => {
+            gsap.to(lightningFlash, {
+              alpha: 0,
+              duration: flashDuration,
+              ease: 'power2.in'
+            });
+          }
+        });
+
+        // Halo synchronisé
+        gsap.to(halo, {
+          alpha: isStrong ? 0.5 : 0.3,
+          duration: 0.05,
+          ease: 'power2.out',
+          onComplete: () => {
+            gsap.to(halo, {
+              alpha: 0,
+              duration: flashDuration * 1.5,
+              ease: 'power2.in'
+            });
+          }
+        });
+
+        // Tremblement du sprite (seulement pour les éclairs puissants)
+        if (isStrong) {
+          const shakeIntensity = 8 + Math.random() * 6;
+          const shakeDuration = 0.4;
+
+          gsap.to(sprite, {
+            x: originalX + (Math.random() - 0.5) * shakeIntensity,
+            y: originalY + (Math.random() - 0.5) * shakeIntensity,
+            duration: 0.05,
+            ease: 'power2.out',
+            onComplete: () => {
+              // Plusieurs petits tremblements
+              gsap.to(sprite, {
+                x: originalX + (Math.random() - 0.5) * shakeIntensity * 0.5,
+                y: originalY + (Math.random() - 0.5) * shakeIntensity * 0.5,
+                duration: 0.1,
+                ease: 'power1.inOut',
+                repeat: 3,
+                yoyo: true,
+                onComplete: () => {
+                  // Retour à la position normale
+                  gsap.to(sprite, {
+                    x: originalX,
+                    y: originalY,
+                    duration: shakeDuration - 0.35,
+                    ease: 'power2.out'
+                  });
+                }
+              });
+            }
+          });
+        }
+
+        // Multi-flash (effet stroboscopique léger)
+        if (multiFlash) {
+          setTimeout(() => {
+            // Deuxième éclair visuel
+            const secondBolt = createLightningBolt();
+            gsap.to(secondBolt, {
+              alpha: 0.7,
+              duration: 0.05,
+              ease: 'power2.out',
+              onComplete: () => {
+                gsap.to(secondBolt, {
+                  alpha: 0,
+                  duration: 0.08,
+                  ease: 'power2.in',
+                  onComplete: () => {
+                    if (!secondBolt.destroyed) {
+                      animationLayerRef.current.removeChild(secondBolt);
+                      secondBolt.destroy();
+                    }
+                  }
+                });
+              }
+            });
+
+            // Flash blanc accompagnant
+            gsap.to(lightningFlash, {
+              alpha: flashOpacity * 0.6,
+              duration: 0.05,
+              ease: 'power2.out',
+              onComplete: () => {
+                gsap.to(lightningFlash, {
+                  alpha: 0,
+                  duration: 0.1,
+                  ease: 'power2.in'
+                });
+              }
+            });
+          }, 150);
+        }
+      }, 50); // 50ms après l'apparition de l'éclair visuel
+    };
+
+    // === 5. DÉCLENCHEMENT ALÉATOIRE DES ÉCLAIRS ===
+    const triggerRandomLightning = () => {
+      if (currentPageRef.current !== 16) return;
+
+      // Déterminer l'intensité (30% de chance d'avoir un éclair fort)
+      const intensity = Math.random() > 0.7 ? 'strong' : 'normal';
+      createLightning(intensity);
+
+      // Programmer le prochain éclair (intervalle aléatoire entre 2 et 6 secondes)
+      const nextDelay = 2000 + Math.random() * 4000;
+      setTimeout(triggerRandomLightning, nextDelay);
+    };
+
+    // Démarrer les éclairs après un court délai
+    setTimeout(() => {
+      triggerRandomLightning();
+    }, 800);
+
+    // Premier éclair immédiat pour l'effet d'entrée
+    setTimeout(() => {
+      createLightning('strong');
+    }, 200);
+
+    // Stocker les éléments pour nettoyage ultérieur
+    appRef.current.page17Elements = {
+      lightningFlash,
+      halo,
+      sprite,
+      originalX,
+      originalY
+    };
+
+    console.log('✅ Page 17 complète: orage avec éclairs et tremblement configuré');
+
+    // === AFFICHAGE DU TEXTE NARRATIF PAGE 17 ===
+    setTimeout(() => {
+      if (currentPageRef.current === 16) {
+        setShowPage17Text(true);
+
+        requestAnimationFrame(() => {
+          if (page17TextRef.current && currentPageRef.current === 16) {
+            gsap.fromTo(
+              page17TextRef.current,
+              {
+                opacity: 0,
+                y: 20
+              },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 1.5,
+                ease: 'power2.out'
+              }
+            );
+          }
+        });
+      }
+    }, 500);
+  };
+
+  /**
    * Reset du zoom et de la position d'un sprite (utilisé lors du changement de page)
    * Mode "cover" : remplit tout l'écran
    */
@@ -4262,6 +4582,39 @@ const PixiBDViewer = () => {
       console.log('🛑 Animation page 16 interrompue - Larmes et cheveux dorés supprimés');
     }
 
+    // Si on quitte la page 17, supprimer les éléments d'animation
+    if (currentPageRef.current === 16 && appRef.current.page17Elements) {
+      const { lightningFlash, halo, sprite, originalX, originalY } = appRef.current.page17Elements;
+
+      // Arrêter les animations GSAP
+      if (lightningFlash) {
+        gsap.killTweensOf(lightningFlash);
+        if (!lightningFlash.destroyed) {
+          animationLayerRef.current.removeChild(lightningFlash);
+          lightningFlash.destroy();
+        }
+      }
+
+      if (halo) {
+        gsap.killTweensOf(halo);
+        if (!halo.destroyed) {
+          animationLayerRef.current.removeChild(halo);
+          halo.destroy();
+        }
+      }
+
+      // Remettre le sprite à sa position originale
+      if (sprite && !sprite.destroyed) {
+        gsap.killTweensOf(sprite);
+        sprite.x = originalX;
+        sprite.y = originalY;
+      }
+
+      appRef.current.page17Elements = null;
+      setShowPage17Text(false);
+      console.log('🛑 Animation page 17 interrompue - Orage supprimé');
+    }
+
     // Si on quitte la page 4, supprimer les éléments d'animation
     if (currentPageRef.current === 3 && appRef.current.page4Elements) {
       const { flowerSprites, flowerContainer, faceOverlay, flowerUpdateTicker, tearDrops, tearTimers } = appRef.current.page4Elements;
@@ -4472,6 +4825,11 @@ const PixiBDViewer = () => {
       setShowPage16Text(false);
     }
 
+    // Si on va vers la page 17, masquer le texte (il sera réaffiché par playPage17Animation)
+    if (pageIndex === 16) {
+      setShowPage17Text(false);
+    }
+
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
     resetSpriteTransform(nextSprite);
 
@@ -4562,6 +4920,11 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 16, démarrer l'animation des larmes et cheveux dorés
         if (pageIndex === 15) {
           playPage16Animation();
+        }
+
+        // Si on arrive sur la page 17, démarrer l'animation de l'orage
+        if (pageIndex === 16) {
+          playPage17Animation();
         }
       }
     });
@@ -4941,6 +5304,21 @@ const PixiBDViewer = () => {
               Apporte un écheveau de soie dont je ferai une échelle."
               <br /><br />
               Ils convinrent qu'il viendrait tous les soirs car le jour venait la vieille.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 17 uniquement) */}
+      {!isLoading && showPage17Text && currentPageRef.current === 16 && (
+        <div ref={page17TextRef} className="page17-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Il le fit à nouveau au crépuscule.
+              <br /><br />
+              Mais tandis qu'il grimpait au mur, il fut brusquement effrayé car il aperçut la magicienne qui se tenait devant lui.
+              <br /><br />
+              « Comment peux-tu te risquer à pénétrer dans mon jardin et à me voler mes raiponces comme un brigand ? » dit-elle avec courroux.
             </p>
           </div>
         </div>
