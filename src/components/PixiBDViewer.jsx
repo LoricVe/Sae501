@@ -96,7 +96,39 @@ const PixiBDViewer = () => {
 
     // Nettoyage au démontage du composant
     return () => {
+      console.log('🧹 Nettoyage du composant PixiBDViewer');
+
+      // Tuer toutes les animations GSAP
+      gsap.killTweensOf('*');
+
       if (appRef.current) {
+        // Nettoyer tous les éléments d'animation spécifiques aux pages
+        const pageElements = [
+          'page2Elements', 'page3Elements', 'page6Elements', 'page7Elements',
+          'page10Elements', 'page11Elements', 'page12Elements', 'page13Elements',
+          'page14Elements', 'page15Elements', 'page16Elements', 'page17Elements',
+          'page18Elements', 'page19Elements', 'page20Elements', 'page21Elements'
+        ];
+
+        pageElements.forEach(elemKey => {
+          if (appRef.current[elemKey]) {
+            const elements = appRef.current[elemKey];
+            // Nettoyer les timers
+            if (elements.ticker) appRef.current.ticker?.remove(elements.ticker);
+            if (elements.timers) elements.timers.forEach(t => clearInterval(t));
+            if (elements.particleTimers) elements.particleTimers.forEach(t => clearInterval(t));
+            if (elements.petalTimers) elements.petalTimers.forEach(t => clearInterval(t));
+            if (elements.emberTimers) elements.emberTimers.forEach(t => clearInterval(t));
+            appRef.current[elemKey] = null;
+          }
+        });
+
+        // Nettoyage du calque d'animation
+        if (animationLayerRef.current) {
+          animationLayerRef.current.removeChildren();
+          animationLayerRef.current = null;
+        }
+
         // Nettoyage des sprites
         spritesRef.current.forEach(sprite => {
           if (sprite && sprite.texture) {
@@ -109,6 +141,8 @@ const PixiBDViewer = () => {
         appRef.current.destroy(true, { children: true, texture: true, baseTexture: true });
         appRef.current = null;
       }
+
+      console.log('✅ Nettoyage terminé');
     };
   }, []);
 
@@ -119,23 +153,41 @@ const PixiBDViewer = () => {
     try {
       const sprites = [];
 
-      // Chargement progressif des images disponibles
+      // Chargement progressif des images disponibles avec gestion d'erreurs
       for (let i = 0; i < AVAILABLE_PAGES.length; i++) {
         const pageNum = AVAILABLE_PAGES[i];
         // Chemin correct pour Vite : /assets au lieu de /src/assets
         const imagePath = `/assets/images/page${pageNum}.png`;
 
-        // Charger la texture
-        const texture = await PIXI.Assets.load(imagePath);
+        try {
+          // Charger la texture avec timeout
+          const texture = await Promise.race([
+            PIXI.Assets.load(imagePath),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Timeout')), 10000)
+            )
+          ]);
 
-        // Créer le sprite
-        const sprite = new PIXI.Sprite(texture);
-        sprite.anchor.set(0.5);
-        sprite.alpha = i === 0 ? 1 : 0; // Seule la première image est visible
+          // Créer le sprite
+          const sprite = new PIXI.Sprite(texture);
+          sprite.anchor.set(0.5);
+          sprite.alpha = i === 0 ? 1 : 0; // Seule la première image est visible
 
-        // Ajout à la scène
-        app.stage.addChild(sprite);
-        sprites.push(sprite);
+          // Ajout à la scène
+          app.stage.addChild(sprite);
+          sprites.push(sprite);
+
+          console.log(`✅ Page ${pageNum} chargée`);
+        } catch (error) {
+          console.error(`❌ Erreur chargement page ${pageNum}:`, error);
+          // Créer un sprite de secours avec une texture vide
+          const fallbackSprite = new PIXI.Sprite(PIXI.Texture.WHITE);
+          fallbackSprite.tint = 0x333333;
+          fallbackSprite.anchor.set(0.5);
+          fallbackSprite.alpha = i === 0 ? 1 : 0;
+          app.stage.addChild(fallbackSprite);
+          sprites.push(fallbackSprite);
+        }
 
         // Mise à jour de la progression
         setLoadProgress(Math.round(((i + 1) / TOTAL_PAGES) * 100));
@@ -225,19 +277,19 @@ const PixiBDViewer = () => {
         return {
           padding: 0, // Aucun padding pour un affichage plein écran
           maxScale: 1.0, // Échelle maximale (100% de la taille originale)
-          transitionDuration: 0.4, // Durée des transitions en secondes
+          transitionDuration: 0.3, // Durée des transitions en secondes (réduite)
         };
       case 'tablet-landscape':
         return {
           padding: 0, // Aucun padding pour tablette
           maxScale: 1.0, // Échelle maximale pour remplir l'écran
-          transitionDuration: 0.5, // Transitions un peu plus lentes
+          transitionDuration: 0.35, // Transitions plus rapides
         };
       default:
         return {
           padding: 0,
           maxScale: 1.0,
-          transitionDuration: 0.5,
+          transitionDuration: 0.35,
         };
     }
   };
@@ -300,7 +352,7 @@ const PixiBDViewer = () => {
       targetScale: 1.2,        // Niveau de zoom (1.4 = 140% de la taille originale)
       offsetX: 80,           // Décalage horizontal (-150 = décale vers la droite pour centrer la tour)
       offsetY: 80,            // Décalage vertical (-80 = décale vers le haut pour centrer la tour)
-      duration: 10,             // Durée de l'animation en secondes
+      duration: 6,             // Durée de l'animation en secondes (réduite de 10 à 6)
       ease: 'power2.inOut'     // Type d'easing (smooth)
     };
 
@@ -1708,17 +1760,17 @@ const PixiBDViewer = () => {
     const sprite = spritesRef.current[20];
     if (!sprite) return;
 
-    // 1. Zoom progressif vers la gauche (2 secondes)
+    // 1. Zoom progressif vers la gauche (1.2 secondes - plus rapide)
     gsap.to(sprite, {
       x: sprite.x + app.screen.width * 0.15, // Translation vers la droite pour voir la gauche de l'image
-      duration: 2,
+      duration: 1.2,
       ease: 'power2.inOut'
     });
 
     gsap.to(sprite.scale, {
       x: sprite.scale.x * 1.3,
       y: sprite.scale.y * 1.3,
-      duration: 2,
+      duration: 1.2,
       ease: 'power2.inOut'
     });
 
@@ -1772,21 +1824,21 @@ const PixiBDViewer = () => {
     // Ajouter au calque d'animation
     animationLayerRef.current.addChild(heart);
 
-    // 3. Apparition du cœur après le zoom (délai de 2 secondes)
+    // 3. Apparition du cœur après le zoom (délai de 1.2 secondes - synchronisé avec le zoom)
     setTimeout(() => {
       if (currentPageRef.current !== 20) return;
 
-      // Animation d'apparition du cœur (1 seconde)
+      // Animation d'apparition du cœur (0.8 seconde - plus rapide)
       gsap.to(heart, {
         alpha: 1,
-        duration: 1,
+        duration: 0.8,
         ease: 'power2.out'
       });
 
       gsap.to(heart.scale, {
         x: 1,
         y: 1,
-        duration: 1,
+        duration: 0.8,
         ease: 'back.out(1.7)'
       });
 
@@ -1864,7 +1916,7 @@ const PixiBDViewer = () => {
 
       particleTimers.push(particleInterval);
 
-      // 5. Maintien pendant 5 secondes, puis dézoom (6 secondes après apparition du cœur)
+      // 5. Maintien pendant 3 secondes, puis dézoom (4 secondes après apparition du cœur - plus rapide)
       setTimeout(() => {
         if (currentPageRef.current !== 20) return;
 
@@ -1874,31 +1926,31 @@ const PixiBDViewer = () => {
         // Faire disparaître le cœur progressivement
         gsap.to(heart, {
           alpha: 0,
-          duration: 1.5,
+          duration: 1,
           ease: 'power2.in'
         });
 
         gsap.to(heart.scale, {
           x: 0.5,
           y: 0.5,
-          duration: 1.5,
+          duration: 1,
           ease: 'power2.in'
         });
 
-        // Dézoom et recentrage (2 secondes)
+        // Dézoom et recentrage (1.2 secondes - plus rapide)
         gsap.to(sprite, {
           x: sprite.x - app.screen.width * 0.15,
-          duration: 2,
+          duration: 1.2,
           ease: 'power2.inOut'
         });
 
         gsap.to(sprite.scale, {
           x: sprite.scale.x / 1.3,
           y: sprite.scale.y / 1.3,
-          duration: 2,
+          duration: 1.2,
           ease: 'power2.inOut'
         });
-      }, 6000);
+      }, 4000);
 
       // Stocker les références pour le nettoyage
       appRef.current.page21Elements = {
@@ -1906,7 +1958,7 @@ const PixiBDViewer = () => {
         particles,
         particleTimers
       };
-    }, 2000);
+    }, 1200);
 
     // Afficher le texte narratif après 500ms
     setTimeout(() => {
@@ -5017,6 +5069,13 @@ const PixiBDViewer = () => {
     const currentSprite = spritesRef.current[currentPageRef.current];
     const nextSprite = spritesRef.current[pageIndex];
 
+    // Vérification de sécurité des sprites
+    if (!currentSprite || !nextSprite) {
+      console.error('❌ Sprites manquants:', { current: !!currentSprite, next: !!nextSprite });
+      isAnimatingRef.current = false;
+      return;
+    }
+
     // Si on quitte la page 1, arrêter toutes les animations GSAP sur ce sprite et masquer le titre
     if (currentPageRef.current === 0) {
       gsap.killTweensOf(currentSprite);
@@ -5889,27 +5948,39 @@ const PixiBDViewer = () => {
   };
 
   /**
-   * Navigation page suivante
+   * Navigation page suivante (avec protection contre les clics multiples)
    */
   const nextPage = () => {
+    if (isAnimatingRef.current) {
+      console.log('⏳ Animation en cours, navigation ignorée');
+      return;
+    }
     if (currentPageRef.current < TOTAL_PAGES - 1) {
       goToPage(currentPageRef.current + 1);
     }
   };
 
   /**
-   * Navigation page précédente
+   * Navigation page précédente (avec protection contre les clics multiples)
    */
   const prevPage = () => {
+    if (isAnimatingRef.current) {
+      console.log('⏳ Animation en cours, navigation ignorée');
+      return;
+    }
     if (currentPageRef.current > 0) {
       goToPage(currentPageRef.current - 1);
     }
   };
 
   /**
-   * Retour au début
+   * Retour au début (avec protection contre les clics multiples)
    */
   const resetToStart = () => {
+    if (isAnimatingRef.current) {
+      console.log('⏳ Animation en cours, navigation ignorée');
+      return;
+    }
     goToPage(0);
   };
 
