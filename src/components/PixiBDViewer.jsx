@@ -39,6 +39,7 @@ const PixiBDViewer = () => {
   const [showPage16Text, setShowPage16Text] = useState(false);
   const [showPage17Text, setShowPage17Text] = useState(false);
   const [showPage18Text, setShowPage18Text] = useState(false);
+  const [showPage19Text, setShowPage19Text] = useState(false);
   const [showPage20Text, setShowPage20Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
@@ -57,6 +58,7 @@ const PixiBDViewer = () => {
   const page16TextRef = useRef(null);
   const page17TextRef = useRef(null);
   const page18TextRef = useRef(null);
+  const page19TextRef = useRef(null);
   const page20TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
@@ -1311,6 +1313,182 @@ const PixiBDViewer = () => {
             );
           }
         });
+      }
+    }, 500);
+  };
+
+  /**
+   * Animation spécifique pour la page 19 : bulle de dialogue avec rire de sorcière
+   */
+  const playPage19Animation = () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 18) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+    console.log('🧙‍♀️ Démarrage animation page 19 - Rire de la sorcière');
+
+    // Nettoyage si déjà existant
+    if (appRef.current.page19Elements) {
+      console.log('⚠️ Éléments page 19 existent déjà, suppression...');
+      const { bubbleContainer, bubbleText } = appRef.current.page19Elements;
+
+      if (bubbleContainer) {
+        gsap.killTweensOf(bubbleContainer);
+        gsap.killTweensOf(bubbleContainer.scale);
+        bubbleContainer.destroy({ children: true });
+      }
+
+      if (bubbleText) {
+        gsap.killTweensOf(bubbleText);
+      }
+
+      appRef.current.page19Elements = null;
+    }
+
+    const sprite = spritesRef.current[18];
+    if (!sprite) return;
+
+    // === CRÉATION DE LA BULLE DE DIALOGUE ===
+    const bubbleContainer = new PIXI.Container();
+
+    // Position de la bulle (à ajuster selon la position de la sorcière)
+    const bubbleConfig = {
+      x: 0.55,  // 35% de la largeur (à gauche du visage)
+      y: 0.25,  // 25% de la hauteur (vers le haut)
+      width: 200,
+      height: 100
+    };
+
+    bubbleContainer.x = app.screen.width * bubbleConfig.x;
+    bubbleContainer.y = app.screen.height * bubbleConfig.y;
+
+    // Dessin de la bulle
+    const bubble = new PIXI.Graphics();
+
+    // Ombre portée (légèrement décalée)
+    bubble.ellipse(5, 5, bubbleConfig.width / 2, bubbleConfig.height / 2);
+    bubble.fill({ color: 0x000000, alpha: 0.2 });
+
+    // Fond de la bulle (ovale)
+    bubble.ellipse(0, 0, bubbleConfig.width / 2, bubbleConfig.height / 2);
+    bubble.fill({ color: 0xfdf2ff });
+
+    // Contour violet foncé
+    bubble.ellipse(0, 0, bubbleConfig.width / 2, bubbleConfig.height / 2);
+    bubble.stroke({ color: 0x660066, width: 3 });
+
+    // Petite flèche pointant vers la bouche de la sorcière (à droite de la bulle)
+    const tail = new PIXI.Graphics();
+    tail.moveTo(40, 30);
+    tail.lineTo(60, 50);
+    tail.lineTo(30, 40);
+    tail.fill({ color: 0xfdf2ff });
+    tail.moveTo(40, 30);
+    tail.lineTo(60, 50);
+    tail.lineTo(30, 40);
+    tail.stroke({ color: 0x660066, width: 3 });
+
+    bubbleContainer.addChild(bubble);
+    bubbleContainer.addChild(tail);
+
+    // Flou léger pour le relief
+    const blurFilter = new PIXI.BlurFilter();
+    blurFilter.blur = 1;
+    bubble.filters = [blurFilter];
+
+    // === TEXTE "Hihihihihi…" ===
+    const bubbleText = new PIXI.Text({
+      text: 'Hihihihihi…',
+      style: {
+        fontFamily: 'Creepster, MedievalSharp, cursive',
+        fontSize: 28,
+        fill: 0x4b0082,
+        fontWeight: 'bold',
+        align: 'center'
+      }
+    });
+
+    bubbleText.anchor.set(0.5);
+    bubbleText.x = 0;
+    bubbleText.y = 0;
+
+    bubbleContainer.addChild(bubbleText);
+
+    // Commencer invisible pour l'animation
+    bubbleContainer.scale.set(0);
+    bubbleContainer.alpha = 0;
+
+    // Ajouter au layer d'animation
+    animationLayerRef.current.addChild(bubbleContainer);
+
+    // === ANIMATION D'APPARITION ===
+    // Bulle pop up
+    gsap.to(bubbleContainer, {
+      alpha: 1,
+      duration: 0.3,
+      ease: 'power2.out'
+    });
+
+    gsap.to(bubbleContainer.scale, {
+      x: 1,
+      y: 1,
+      duration: 0.5,
+      ease: 'back.out(2)',
+      delay: 0.1
+    });
+
+    // Texte apparait avec rebond après la bulle
+    gsap.fromTo(bubbleText.scale,
+      { x: 0, y: 0 },
+      {
+        x: 1,
+        y: 1,
+        duration: 0.4,
+        ease: 'elastic.out(1, 0.5)',
+        delay: 0.4
+      }
+    );
+
+    // Vibration du texte (effet de rire)
+    gsap.to(bubbleText, {
+      x: 2,
+      duration: 0.1,
+      repeat: 10,
+      yoyo: true,
+      ease: 'none',
+      delay: 0.8
+    });
+
+    gsap.to(bubbleText, {
+      rotation: 0.05,
+      duration: 0.15,
+      repeat: 8,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: 0.8
+    });
+
+    // Stocker les références pour le nettoyage
+    appRef.current.page19Elements = {
+      bubbleContainer,
+      bubbleText
+    };
+
+    // Afficher le texte narratif après 500ms
+    setTimeout(() => {
+      if (currentPageRef.current === 18) {
+        setShowPage19Text(true);
+
+        setTimeout(() => {
+          if (page19TextRef.current) {
+            gsap.fromTo(
+              page19TextRef.current,
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 1.5, ease: 'power2.out' }
+            );
+          }
+        }, 50);
       }
     }, 500);
   };
@@ -5227,6 +5405,30 @@ const PixiBDViewer = () => {
       setShowPage18Text(false);
     }
 
+    // Si on quitte la page 19, supprimer les éléments d'animation
+    if (currentPageRef.current === 18 && appRef.current.page19Elements) {
+      const { bubbleContainer, bubbleText } = appRef.current.page19Elements;
+
+      if (bubbleContainer) {
+        gsap.killTweensOf(bubbleContainer);
+        gsap.killTweensOf(bubbleContainer.scale);
+        bubbleContainer.destroy({ children: true });
+      }
+
+      if (bubbleText) {
+        gsap.killTweensOf(bubbleText);
+      }
+
+      appRef.current.page19Elements = null;
+      setShowPage19Text(false);
+      console.log('🛑 Animation page 19 interrompue - Bulle de dialogue supprimée');
+    }
+
+    // Si on va vers la page 19, masquer le texte (il sera réaffiché par playPage19Animation)
+    if (pageIndex === 18) {
+      setShowPage19Text(false);
+    }
+
     // Si on quitte la page 20, supprimer les éléments d'animation
     if (currentPageRef.current === 19 && appRef.current.page20Elements) {
       const { rosierSprite, petals, petalTimers } = appRef.current.page20Elements;
@@ -5358,6 +5560,11 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 18, démarrer l'animation des cheveux dorés
         if (pageIndex === 17) {
           playPage18Animation();
+        }
+
+        // Si on arrive sur la page 19, démarrer l'animation de la bulle de dialogue
+        if (pageIndex === 18) {
+          playPage19Animation();
         }
 
         // Si on arrive sur la page 20, démarrer l'animation du rosier et des pétales
@@ -5768,6 +5975,17 @@ const PixiBDViewer = () => {
           <div className="narrative-box">
             <p className="narrative-text">
               En un clin d'œil, les splendides tresses furent étalées sur le sol. La magicienne fut si impitoyable qu'elle exila Raiponce dans une contrée désertique où elle dut vivre dans la privation et la peine.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 19 uniquement) */}
+      {!isLoading && showPage19Text && currentPageRef.current === 18 && (
+        <div ref={page19TextRef} className="page19-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Le jour même, la magicienne accrocha les tresses à la fenêtre. Quand le prince appela, elle laissa choir les cheveux. Le prince monta mais trouva la magicienne qui ricana : "Le bel oiseau n'est plus au nid ! Raiponce est perdue pour toi !"
             </p>
           </div>
         </div>
