@@ -22,6 +22,7 @@ const PixiBDViewer = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
   const [showTitle, setShowTitle] = useState(true);
+  const [isTextVisible, setIsTextVisible] = useState(true); // Toggle global pour les textes
   const [showPage2Text, setShowPage2Text] = useState(false);
   const [showPage3Text, setShowPage3Text] = useState(false);
   const [showPage4Text, setShowPage4Text] = useState(false);
@@ -6127,7 +6128,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 2 uniquement) */}
-      {!isLoading && showPage2Text && currentPageRef.current === 1 && (
+      {!isLoading && showPage2Text && currentPageRef.current === 1 && isTextVisible && (
         <div ref={page2TextRef} className="page2-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6139,7 +6140,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 3 uniquement) */}
-      {!isLoading && showPage3Text && currentPageRef.current === 2 && (
+      {!isLoading && showPage3Text && currentPageRef.current === 2 && isTextVisible && (
         <div ref={page3TextRef} className="page3-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6151,7 +6152,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 4 uniquement) */}
-      {!isLoading && showPage4Text && currentPageRef.current === 3 && (
+      {!isLoading && showPage4Text && currentPageRef.current === 3 && isTextVisible && (
         <div ref={page4TextRef} className="page4-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6163,7 +6164,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 5 uniquement) */}
-      {!isLoading && showPage5Text && currentPageRef.current === 4 && (
+      {!isLoading && showPage5Text && currentPageRef.current === 4 && isTextVisible && (
         <div ref={page5TextRef} className="page5-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6178,7 +6179,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 6 uniquement) */}
-      {!isLoading && showPage6Text && currentPageRef.current === 5 && (
+      {!isLoading && showPage6Text && currentPageRef.current === 5 && isTextVisible && (
         <div ref={page6TextRef} className="page6-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6193,7 +6194,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 7 uniquement) */}
-      {!isLoading && showPage7Text && currentPageRef.current === 6 && (
+      {!isLoading && showPage7Text && currentPageRef.current === 6 && isTextVisible && (
         <div ref={page7TextRef} className="page7-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6206,7 +6207,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 8 uniquement) */}
-      {!isLoading && showPage8Text && currentPageRef.current === 7 && (
+      {!isLoading && showPage8Text && currentPageRef.current === 7 && isTextVisible && (
         <div ref={page8TextRef} className="page8-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6221,7 +6222,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 9 uniquement) */}
-      {!isLoading && showPage9Text && currentPageRef.current === 8 && (
+      {!isLoading && showPage9Text && currentPageRef.current === 8 && isTextVisible && (
         <div ref={page9TextRef} className="page9-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6232,7 +6233,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 10 uniquement) */}
-      {!isLoading && showPage10Text && currentPageRef.current === 9 && (
+      {!isLoading && showPage10Text && currentPageRef.current === 9 && isTextVisible && (
         <div ref={page10TextRef} className="page10-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6243,7 +6244,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 11 uniquement) */}
-      {!isLoading && showPage11Text && currentPageRef.current === 10 && (
+      {!isLoading && showPage11Text && currentPageRef.current === 10 && isTextVisible && (
         <div ref={page11TextRef} className="page11-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6254,7 +6255,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 12 uniquement) */}
-      {!isLoading && showPage12Text && currentPageRef.current === 11 && (
+      {!isLoading && showPage12Text && currentPageRef.current === 11 && isTextVisible && (
         <div ref={page12TextRef} className="page12-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6269,7 +6270,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 13 uniquement) */}
-      {!isLoading && showPage13Text && currentPageRef.current === 12 && (
+      {!isLoading && showPage13Text && currentPageRef.current === 12 && isTextVisible && (
         <div ref={page13TextRef} className="page13-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6280,7 +6281,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 14 uniquement) */}
-      {!isLoading && showPage14Text && currentPageRef.current === 13 && (
+      {!isLoading && showPage14Text && currentPageRef.current === 13 && isTextVisible && (
         <div ref={page14TextRef} className="page14-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6291,7 +6292,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 15 uniquement) */}
-      {!isLoading && showPage15Text && currentPageRef.current === 14 && (
+      {!isLoading && showPage15Text && currentPageRef.current === 14 && isTextVisible && (
         <div ref={page15TextRef} className="page15-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6306,7 +6307,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 16 uniquement) */}
-      {!isLoading && showPage16Text && currentPageRef.current === 15 && (
+      {!isLoading && showPage16Text && currentPageRef.current === 15 && isTextVisible && (
         <div ref={page16TextRef} className="page16-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6321,7 +6322,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 17 uniquement) */}
-      {!isLoading && showPage17Text && currentPageRef.current === 16 && (
+      {!isLoading && showPage17Text && currentPageRef.current === 16 && isTextVisible && (
         <div ref={page17TextRef} className="page17-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6336,7 +6337,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 18 uniquement) */}
-      {!isLoading && showPage18Text && currentPageRef.current === 17 && (
+      {!isLoading && showPage18Text && currentPageRef.current === 17 && isTextVisible && (
         <div ref={page18TextRef} className="page18-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6347,7 +6348,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 19 uniquement) */}
-      {!isLoading && showPage19Text && currentPageRef.current === 18 && (
+      {!isLoading && showPage19Text && currentPageRef.current === 18 && isTextVisible && (
         <div ref={page19TextRef} className="page19-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6358,7 +6359,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 20 uniquement) */}
-      {!isLoading && showPage20Text && currentPageRef.current === 19 && (
+      {!isLoading && showPage20Text && currentPageRef.current === 19 && isTextVisible && (
         <div ref={page20TextRef} className="page20-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6369,7 +6370,7 @@ const PixiBDViewer = () => {
       )}
 
       {/* Texte narratif (page 21 uniquement) */}
-      {!isLoading && showPage21Text && currentPageRef.current === 20 && (
+      {!isLoading && showPage21Text && currentPageRef.current === 20 && isTextVisible && (
         <div ref={page21TextRef} className="page21-narrative-overlay">
           <div className="narrative-box">
             <p className="narrative-text">
@@ -6428,6 +6429,53 @@ const PixiBDViewer = () => {
           <div className="help-text">
             <p>🖱️ Molette | ⌨️ Flèches | R = Retour au début</p>
           </div>
+
+          {/* Bouton toggle texte */}
+          <button
+            onClick={() => setIsTextVisible(!isTextVisible)}
+            className="text-toggle-btn"
+            aria-label={isTextVisible ? "Masquer le texte" : "Afficher le texte"}
+            title={isTextVisible ? "Masquer le texte" : "Afficher le texte"}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {isTextVisible ? (
+                // Icône "œil ouvert" (texte visible)
+                <>
+                  <path
+                    d="M12 5C7 5 2.73 8.11 1 12.5 2.73 16.89 7 20 12 20s9.27-3.11 11-7.5C21.27 8.11 17 5 12 5z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle
+                    cx="12"
+                    cy="12.5"
+                    r="3"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                </>
+              ) : (
+                // Icône "œil barré" (texte masqué)
+                <>
+                  <path
+                    d="M3 3l18 18M10.5 10.5a3 3 0 004 4M7.36 7.36A9.96 9.96 0 001 12.5c1.73 4.39 6 7.5 11 7.5 1.5 0 2.93-.27 4.24-.77m2.4-1.37A10.94 10.94 0 0023 12.5c-1.73-4.39-6-7.5-11-7.5a10.94 10.94 0 00-4.64 1.13"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </>
+              )}
+            </svg>
+          </button>
         </>
       )}
     </div>

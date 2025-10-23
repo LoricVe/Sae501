@@ -247,6 +247,42 @@ html, body {
   backdrop-filter: blur(5px);
 }
 
+/* Bouton toggle texte */
+.text-toggle-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  cursor: pointer;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.text-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.text-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.text-toggle-btn svg {
+  transition: all 0.3s ease;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   /* Tablette landscape */
@@ -290,6 +326,18 @@ html, body {
   .help-text {
     bottom: 70px;
     font-size: 10px;
+  }
+
+  .text-toggle-btn {
+    width: 45px;
+    height: 45px;
+    top: 15px;
+    right: 15px;
+  }
+
+  .text-toggle-btn svg {
+    width: 20px;
+    height: 20px;
   }
 
   .progress-bar {
