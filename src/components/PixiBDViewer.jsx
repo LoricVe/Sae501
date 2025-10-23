@@ -39,6 +39,7 @@ const PixiBDViewer = () => {
   const [showPage16Text, setShowPage16Text] = useState(false);
   const [showPage17Text, setShowPage17Text] = useState(false);
   const [showPage18Text, setShowPage18Text] = useState(false);
+  const [showPage20Text, setShowPage20Text] = useState(false);
   const page2TextRef = useRef(null);
   const page3TextRef = useRef(null);
   const page4TextRef = useRef(null);
@@ -56,6 +57,7 @@ const PixiBDViewer = () => {
   const page16TextRef = useRef(null);
   const page17TextRef = useRef(null);
   const page18TextRef = useRef(null);
+  const page20TextRef = useRef(null);
 
   // Liste des pages disponibles (toutes les 21 pages)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
@@ -1309,6 +1311,180 @@ const PixiBDViewer = () => {
             );
           }
         });
+      }
+    }, 500);
+  };
+
+  /**
+   * Animation spécifique pour la page 20 : rosier avec ronces + pétales volants
+   */
+  const playPage20Animation = async () => {
+    const app = appRef.current;
+    if (!app || currentPageRef.current !== 19) {
+      console.log('❌ Conditions non remplies:', { app: !!app, currentPage: currentPageRef.current });
+      return;
+    }
+    console.log('🌹 Démarrage animation page 20 - Rosier et pétales');
+
+    // Nettoyage si déjà existant
+    if (appRef.current.page20Elements) {
+      console.log('⚠️ Éléments page 20 existent déjà, suppression...');
+      const { rosierSprite, petals, petalTimers } = appRef.current.page20Elements;
+
+      if (petalTimers) {
+        petalTimers.forEach(timer => clearInterval(timer));
+      }
+
+      if (rosierSprite) {
+        gsap.killTweensOf(rosierSprite);
+        gsap.killTweensOf(rosierSprite.scale);
+        rosierSprite.destroy();
+      }
+
+      if (petals) {
+        petals.forEach(petal => {
+          gsap.killTweensOf(petal);
+          petal.destroy();
+        });
+      }
+
+      appRef.current.page20Elements = null;
+    }
+
+    const sprite = spritesRef.current[19];
+    if (!sprite) return;
+
+    // Charger le sprite Ronce1.png avec PIXI.Assets
+    const rosierTexture = await PIXI.Assets.load('/assets/images/Ronce1.png');
+    const rosierSprite = new PIXI.Sprite(rosierTexture);
+
+    // Position centrée en bas de l'écran
+    rosierSprite.anchor.set(0.5, 0.73); // Ancre en bas au centre
+    rosierSprite.x = app.screen.width * 0.5; // Centre horizontal
+    rosierSprite.y = app.screen.height * 0.95; // Bas de l'écran
+
+    // Ajuster la taille du rosier
+    const targetWidth = app.screen.width * 0.4; // 40% de la largeur
+    const scale = targetWidth / rosierSprite.width;
+    rosierSprite.scale.set(0); // Commence invisible pour l'animation de croissance
+    rosierSprite.alpha = 0;
+
+    // Ajouter au-dessus du sprite de page
+    animationLayerRef.current.addChild(rosierSprite);
+
+    // Animation de croissance du rosier (2 secondes)
+    gsap.to(rosierSprite, {
+      alpha: 1,
+      duration: 2,
+      ease: 'power2.out'
+    });
+
+    gsap.to(rosierSprite.scale, {
+      x: scale,
+      y: scale,
+      duration: 2,
+      ease: 'elastic.out(1, 0.5)'
+    });
+
+    // Oscillation légère du haut du rosier
+    gsap.to(rosierSprite, {
+      rotation: 0.035, // ~2°
+      duration: 3,
+      yoyo: true,
+      repeat: -1,
+      ease: 'sine.inOut'
+    });
+
+    // Système de pétales volants
+    const petals = [];
+    const petalTimers = [];
+
+    // Sauvegarder la position du rosier pour les pétales
+    const rosierBaseX = rosierSprite.x;
+    const rosierBaseY = rosierSprite.y - rosierSprite.height * scale * 0.8;
+
+    const createPetal = () => {
+      // Vérifier si on est toujours sur la page 20
+      if (currentPageRef.current !== 19 || !animationLayerRef.current) return;
+
+      // Créer un pétale (petit cercle rose)
+      const petal = new PIXI.Graphics();
+      const petalColor = Math.random() > 0.5 ? 0xFF69B4 : 0xDC143C; // Rose ou rouge
+      petal.circle(0, 0, 3 + Math.random() * 3);
+      petal.fill({ color: petalColor, alpha: 0.7 });
+
+      // Position de départ : au-dessus du rosier, légèrement décalée
+      petal.x = rosierBaseX + (Math.random() - 0.5) * 100;
+      petal.y = rosierBaseY;
+      petal.alpha = 0;
+
+      animationLayerRef.current.addChild(petal);
+      petals.push(petal);
+
+      // Animation du pétale : monte et dérive
+      const direction = Math.random() > 0.5 ? 1 : -1;
+      const distance = 150 + Math.random() * 200;
+      const duration = 3 + Math.random() * 2;
+
+      gsap.to(petal, {
+        alpha: 1,
+        duration: 0.3,
+        ease: 'power2.in'
+      });
+
+      gsap.to(petal, {
+        x: petal.x + direction * distance,
+        y: petal.y - 200 - Math.random() * 100,
+        rotation: Math.random() * Math.PI * 4,
+        alpha: 0,
+        duration: duration,
+        ease: 'power1.out',
+        onComplete: () => {
+          petal.destroy();
+          const index = petals.indexOf(petal);
+          if (index > -1) petals.splice(index, 1);
+        }
+      });
+    };
+
+    // Démarrer l'émission de pétales après 2.5s (après l'apparition du rosier)
+    setTimeout(() => {
+      // Créer des pétales avec un décalage
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => createPetal(), i * 500);
+      }
+
+      // Continuer à émettre des pétales toutes les 2-3 secondes
+      const petalInterval = setInterval(() => {
+        if (currentPageRef.current === 19) {
+          createPetal();
+        }
+      }, 2000 + Math.random() * 1000);
+
+      petalTimers.push(petalInterval);
+    }, 2500);
+
+    // Stocker les références pour le nettoyage
+    appRef.current.page20Elements = {
+      rosierSprite,
+      petals,
+      petalTimers
+    };
+
+    // Afficher le texte narratif après 500ms
+    setTimeout(() => {
+      if (currentPageRef.current === 19) {
+        setShowPage20Text(true);
+
+        setTimeout(() => {
+          if (page20TextRef.current) {
+            gsap.fromTo(
+              page20TextRef.current,
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 1.5, ease: 'power2.out' }
+            );
+          }
+        }, 50);
       }
     }, 500);
   };
@@ -5051,6 +5227,37 @@ const PixiBDViewer = () => {
       setShowPage18Text(false);
     }
 
+    // Si on quitte la page 20, supprimer les éléments d'animation
+    if (currentPageRef.current === 19 && appRef.current.page20Elements) {
+      const { rosierSprite, petals, petalTimers } = appRef.current.page20Elements;
+
+      if (petalTimers) {
+        petalTimers.forEach(timer => clearInterval(timer));
+      }
+
+      if (rosierSprite) {
+        gsap.killTweensOf(rosierSprite);
+        gsap.killTweensOf(rosierSprite.scale);
+        rosierSprite.destroy();
+      }
+
+      if (petals) {
+        petals.forEach(petal => {
+          gsap.killTweensOf(petal);
+          petal.destroy();
+        });
+      }
+
+      appRef.current.page20Elements = null;
+      setShowPage20Text(false);
+      console.log('🛑 Animation page 20 interrompue - Rosier et pétales supprimés');
+    }
+
+    // Si on va vers la page 20, masquer le texte (il sera réaffiché par playPage20Animation)
+    if (pageIndex === 19) {
+      setShowPage20Text(false);
+    }
+
     // Reset du sprite suivant avant de l'afficher (pour enlever tout zoom résiduel)
     resetSpriteTransform(nextSprite);
 
@@ -5151,6 +5358,11 @@ const PixiBDViewer = () => {
         // Si on arrive sur la page 18, démarrer l'animation des cheveux dorés
         if (pageIndex === 17) {
           playPage18Animation();
+        }
+
+        // Si on arrive sur la page 20, démarrer l'animation du rosier et des pétales
+        if (pageIndex === 19) {
+          playPage20Animation();
         }
       }
     });
@@ -5364,7 +5576,7 @@ const PixiBDViewer = () => {
           </div>
         </div>
       )}
-       
+
       {/* Texte narratif (page 4 uniquement) */}
       {!isLoading && showPage4Text && currentPageRef.current === 3 && (
         <div ref={page4TextRef} className="page4-narrative-overlay">
@@ -5392,7 +5604,7 @@ const PixiBDViewer = () => {
         </div>
       )}
 
-      {/* Texte narratif (page 6 uniquement)kkkk */}
+      {/* Texte narratif (page 6 uniquement) */}
       {!isLoading && showPage6Text && currentPageRef.current === 5 && (
         <div ref={page6TextRef} className="page6-narrative-overlay">
           <div className="narrative-box">
@@ -5556,6 +5768,17 @@ const PixiBDViewer = () => {
           <div className="narrative-box">
             <p className="narrative-text">
               En un clin d'œil, les splendides tresses furent étalées sur le sol. La magicienne fut si impitoyable qu'elle exila Raiponce dans une contrée désertique où elle dut vivre dans la privation et la peine.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Texte narratif (page 20 uniquement) */}
+      {!isLoading && showPage20Text && currentPageRef.current === 19 && (
+        <div ref={page20TextRef} className="page20-narrative-overlay">
+          <div className="narrative-box">
+            <p className="narrative-text">
+              Le prince, envahi par la douleur, bondit par la fenêtre de désespoir. Il survécut mais les épines du bosquet lui crevèrent les yeux. Il erra aveugle dans la forêt, ne mangeant que racines et baies, pleurant la perte de sa bien-aimée.
             </p>
           </div>
         </div>

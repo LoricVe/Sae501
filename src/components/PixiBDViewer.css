@@ -526,6 +526,17 @@ html, body {
   max-width: 500px;
 }
 
+/* Texte narratif - Page 20 (même style) */
+.page20-narrative-overlay {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  z-index: 150;
+  pointer-events: none;
+  user-select: none;
+  max-width: 500px;
+}
+
 /* Responsive pour le texte narratif */
 @media (max-width: 1024px) {
   .page2-narrative-overlay,
@@ -544,7 +555,8 @@ html, body {
   .page15-narrative-overlay,
   .page16-narrative-overlay,
   .page17-narrative-overlay,
-  .page18-narrative-overlay {
+  .page18-narrative-overlay,
+  .page20-narrative-overlay {
     top: 30px;
     left: 30px;
     max-width: 400px;
@@ -582,7 +594,8 @@ html, body {
   .page15-narrative-overlay,
   .page16-narrative-overlay,
   .page17-narrative-overlay,
-  .page18-narrative-overlay {
+  .page18-narrative-overlay,
+  .page20-narrative-overlay {
     top: 80px;
     right: 20px;
     left: 20px;
