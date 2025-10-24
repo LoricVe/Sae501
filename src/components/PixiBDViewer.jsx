@@ -23,6 +23,7 @@ const PixiBDViewer = () => {
   const [loadProgress, setLoadProgress] = useState(0);
   const [showTitle, setShowTitle] = useState(true);
   const [isTextVisible, setIsTextVisible] = useState(true); // Toggle global pour les textes
+  const [showCoverPage, setShowCoverPage] = useState(false); // État pour la page de couverture
   const [showPage2Text, setShowPage2Text] = useState(false);
   const [showPage3Text, setShowPage3Text] = useState(false);
   const [showPage4Text, setShowPage4Text] = useState(false);
@@ -64,9 +65,9 @@ const PixiBDViewer = () => {
   const page20TextRef = useRef(null);
   const page21TextRef = useRef(null);
 
-  // Liste des pages disponibles (toutes les 21 pages)
+  // Liste des pages disponibles (21 pages BD + 1 page de couverture)
   const AVAILABLE_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
-  const TOTAL_PAGES = AVAILABLE_PAGES.length;
+  const TOTAL_PAGES = AVAILABLE_PAGES.length + 1; // +1 pour la page de couverture
 
   useEffect(() => {
     // Création de l'application Pixi.js
@@ -5065,6 +5066,55 @@ const PixiBDViewer = () => {
       return;
     }
 
+    // Si on va à la page de couverture (page 22 = index 21)
+    if (pageIndex === 21) {
+      isAnimatingRef.current = true;
+      const currentSprite = spritesRef.current[currentPageRef.current];
+
+      // Fade out du sprite actuel
+      if (currentSprite) {
+        gsap.to(currentSprite, {
+          alpha: 0,
+          duration: 0.8,
+          onComplete: () => {
+            currentSprite.visible = false;
+            currentPageRef.current = 21;
+            setCurrentPage(22);
+            setShowCoverPage(true);
+            isAnimatingRef.current = false;
+          }
+        });
+      } else {
+        currentPageRef.current = 21;
+        setCurrentPage(22);
+        setShowCoverPage(true);
+        isAnimatingRef.current = false;
+      }
+      return;
+    }
+
+    // Si on quitte la page de couverture
+    if (currentPageRef.current === 21) {
+      setShowCoverPage(false);
+      currentPageRef.current = pageIndex;
+      setCurrentPage(pageIndex + 1);
+      const nextSprite = spritesRef.current[pageIndex];
+      if (nextSprite) {
+        nextSprite.visible = true;
+        nextSprite.alpha = 0;
+        gsap.to(nextSprite, {
+          alpha: 1,
+          duration: 0.8,
+          onComplete: () => {
+            isAnimatingRef.current = false;
+          }
+        });
+      } else {
+        isAnimatingRef.current = false;
+      }
+      return;
+    }
+
     isAnimatingRef.current = true;
 
     const currentSprite = spritesRef.current[currentPageRef.current];
@@ -6376,6 +6426,40 @@ const PixiBDViewer = () => {
             <p className="narrative-text">
               Après quelques années misérables, il atteignit la contrée déserte où Raiponce survivait avec les jumeaux qu'elle avait mis au monde. Elle le reconnut et se pendit à son cou en pleurant. Deux de ses larmes tombèrent dans ses yeux et il recouvra la vue. Il l'emmena dans son royaume où ils vécurent longtemps heureux et sereins.
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Page de couverture (page 22) */}
+      {!isLoading && showCoverPage && currentPageRef.current === 21 && (
+        <div className="cover-page-container">
+          <div className="cover-content">
+            <div className="students-section">
+              <h2 className="students-title">Les étudiants</h2>
+              <p className="students-names">Loric Verrez · Zhang Yancheng</p>
+            </div>
+
+            <div className="logos-section">
+              <img
+                src="/assets/images/Logoiut.png"
+                alt="Logo IUT"
+                className="logo logo-iut"
+              />
+              <img
+                src="/assets/images/Logommi.png"
+                alt="Logo MMI"
+                className="logo logo-mmi"
+              />
+              <img
+                src="/assets/images/Logoum.png"
+                alt="Logo Université Le Mans"
+                className="logo logo-um"
+              />
+            </div>
+
+            <div className="footer-section">
+              <p className="project-info">Projet réalisé dans le cadre de la formation MMI</p>
+            </div>
           </div>
         </div>
       )}

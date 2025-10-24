@@ -708,3 +708,195 @@ html, body {
 .help-text {
   animation: fadeIn 0.5s ease-out;
 }
+
+/* ==================== PAGE DE COUVERTURE ==================== */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Lato:wght@300;400&display=swap');
+
+.cover-page-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc4 100%);
+  z-index: 100;
+  animation: fadeIn 1.5s ease-in;
+}
+
+/* Texture subtile en arrière-plan */
+.cover-page-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.01) 2px,
+      rgba(0, 0, 0, 0.01) 4px
+    );
+  pointer-events: none;
+}
+
+.cover-page-container .cover-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  z-index: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  width: 100%;
+}
+
+/* Section des noms */
+.cover-page-container .students-section {
+  text-align: center;
+}
+
+.cover-page-container .students-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #5a4a3a;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.cover-page-container .students-names {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #2c2416;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Section des logos */
+.cover-page-container .logos-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.cover-page-container .logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  filter: brightness(1) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+.cover-page-container .logo:hover {
+  filter: brightness(1.15) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+  transform: translateY(-4px);
+}
+
+/* Footer */
+.cover-page-container .footer-section {
+  text-align: center;
+  margin-top: -30px;
+}
+
+.cover-page-container .project-info {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #7a6a5a;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+/* Responsive - Tablette horizontale */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .cover-page-container .cover-content {
+    gap: 3.5rem;
+  }
+
+  .cover-page-container .students-title {
+    font-size: 1.75rem;
+  }
+
+  .cover-page-container .students-names {
+    font-size: 3rem;
+  }
+
+  .cover-page-container .logos-section {
+    gap: 3rem;
+  }
+
+  .cover-page-container .logo {
+    width: 140px;
+  }
+
+  .cover-page-container .project-info {
+    font-size: 1.05rem;
+  }
+}
+
+/* Responsive - Desktop */
+@media (min-width: 1025px) {
+  .cover-page-container .cover-content {
+    gap: 4rem;
+  }
+
+  .cover-page-container .students-title {
+    font-size: 2rem;
+  }
+
+  .cover-page-container .students-names {
+    font-size: 3.5rem;
+  }
+
+  .cover-page-container .logos-section {
+    gap: 4rem;
+  }
+
+  .cover-page-container .logo {
+    width: 160px;
+  }
+
+  .cover-page-container .project-info {
+    font-size: 1.1rem;
+  }
+}
+
+/* Responsive - Mobile (fallback) */
+@media (max-width: 767px) {
+  .cover-page-container .cover-content {
+    gap: 2rem;
+    padding: 1.5rem;
+  }
+
+  .cover-page-container .students-title {
+    font-size: 1.2rem;
+  }
+
+  .cover-page-container .students-names {
+    font-size: 2rem;
+  }
+
+  .cover-page-container .logos-section {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .cover-page-container .logo {
+    width: 100px;
+  }
+
+  .cover-page-container .project-info {
+    font-size: 0.85rem;
+  }
+}
