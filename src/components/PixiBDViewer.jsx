@@ -158,8 +158,8 @@ const PixiBDViewer = () => {
       // Chargement progressif des images disponibles avec gestion d'erreurs
       for (let i = 0; i < AVAILABLE_PAGES.length; i++) {
         const pageNum = AVAILABLE_PAGES[i];
-        // Chemin correct pour Vite : /assets au lieu de /src/assets
-        const imagePath = `/assets/images/page${pageNum}.png`;
+        // Chemin correct pour Vite + GitHub Pages
+        const imagePath = `${import.meta.env.BASE_URL}assets/images/page${pageNum}.png`;
 
         try {
           // Charger la texture avec timeout
@@ -1589,7 +1589,7 @@ const PixiBDViewer = () => {
     if (!sprite) return;
 
     // Charger le sprite Ronce1.png avec PIXI.Assets
-    const rosierTexture = await PIXI.Assets.load('/assets/images/Ronce1.png');
+    const rosierTexture = await PIXI.Assets.load(`${import.meta.env.BASE_URL}assets/images/Ronce1.png`);
     const rosierSprite = new PIXI.Sprite(rosierTexture);
 
     // Position centrée en bas de l'écran
@@ -2268,7 +2268,7 @@ const PixiBDViewer = () => {
     const loadWitch = async () => {
       try {
         // Charger l'image de la sorcière
-        const witchTexture = await PIXI.Assets.load('/assets/images/sorciere1.png');
+        const witchTexture = await PIXI.Assets.load(`${import.meta.env.BASE_URL}assets/images/sorciere1.png`);
         const witchSprite = new PIXI.Sprite(witchTexture);
 
         // Configuration initiale
@@ -2897,7 +2897,7 @@ const PixiBDViewer = () => {
 
       try {
         // Charger le spritesheet de l'oiseau
-        const birdTexture = await PIXI.Assets.load('/assets/images/oiseau1.png');
+        const birdTexture = await PIXI.Assets.load(`${import.meta.env.BASE_URL}assets/images/oiseau1.png`);
         const bird = new PIXI.Sprite(birdTexture);
 
         // Configuration initiale
@@ -3420,7 +3420,7 @@ const PixiBDViewer = () => {
 
       try {
         // Charger l'image de la sorcière
-        const texture = await PIXI.Assets.load('/assets/images/sorciere2.png');
+        const texture = await PIXI.Assets.load(`${import.meta.env.BASE_URL}assets/images/sorciere2.png`);
 
         if (currentPageRef.current !== 11) return; // Vérifier qu'on est toujours sur la page
 
@@ -6441,17 +6441,17 @@ const PixiBDViewer = () => {
 
             <div className="logos-section">
               <img
-                src="/assets/images/Logoiut.png"
+                src={`${import.meta.env.BASE_URL}assets/images/Logoiut.png`}
                 alt="Logo IUT"
                 className="logo logo-iut"
               />
               <img
-                src="/assets/images/Logommi.png"
+                src={`${import.meta.env.BASE_URL}assets/images/Logommi.png`}
                 alt="Logo MMI"
                 className="logo logo-mmi"
               />
               <img
-                src="/assets/images/Logoum.png"
+                src={`${import.meta.env.BASE_URL}assets/images/Logoum.png`}
                 alt="Logo Université Le Mans"
                 className="logo logo-um"
               />
