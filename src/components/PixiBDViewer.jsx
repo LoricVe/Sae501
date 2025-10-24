@@ -1547,6 +1547,41 @@ const PixiBDViewer = () => {
         }, 50);
       }
     }, 500);
+
+    // Zoom vers la gauche (partie gauche de l'image) après 6 secondes
+    setTimeout(() => {
+      if (currentPageRef.current === 18 && sprite) {
+        console.log('🔍 Zoom vers la gauche sur page 19');
+
+        // Faire disparaître la bulle avant le zoom
+        if (bubbleContainer) {
+          gsap.to(bubbleContainer, {
+            alpha: 0,
+            duration: 0.5,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              if (bubbleContainer.parent) {
+                bubbleContainer.destroy({ children: true });
+              }
+            }
+          });
+        }
+
+        // Translation vers la DROITE pour voir la partie GAUCHE de l'image
+        gsap.to(sprite, {
+          x: sprite.x + app.screen.width * 0.15,
+          duration: 1.5,
+          ease: 'power2.inOut'
+        });
+
+        gsap.to(sprite.scale, {
+          x: sprite.scale.x * 1.3,
+          y: sprite.scale.y * 1.3,
+          duration: 1.5,
+          ease: 'power2.inOut'
+        });
+      }
+    }, 6000);
   };
 
   /**
@@ -1780,7 +1815,7 @@ const PixiBDViewer = () => {
     const heart = new PIXI.Graphics();
 
     // Dessiner un grand cœur avec contour épais (les personnages seront à l'intérieur)
-    const heartSize = 140; // Taille ajustée pour bien entourer les têtes
+    const heartSize = 230; // Taille augmentée pour un cœur plus grand
     const heartColor = 0xFF1493; // Rose profond
     const glowColor = 0xFFFFFF; // Blanc pour l'effet glow
 
@@ -5774,9 +5809,11 @@ const PixiBDViewer = () => {
       setShowPage18Text(false);
     }
 
-    // Si on quitte la page 19, supprimer les éléments d'animation
+    // Si on quitte la page 19, supprimer les éléments d'animation et dézoom
     if (currentPageRef.current === 18 && appRef.current.page19Elements) {
       const { bubbleContainer, bubbleText } = appRef.current.page19Elements;
+      const sprite = spritesRef.current[18];
+      const app = appRef.current;
 
       if (bubbleContainer) {
         gsap.killTweensOf(bubbleContainer);
@@ -5788,9 +5825,28 @@ const PixiBDViewer = () => {
         gsap.killTweensOf(bubbleText);
       }
 
+      // Dézoom et recentrage du sprite
+      if (sprite && app) {
+        gsap.killTweensOf(sprite);
+        gsap.killTweensOf(sprite.scale);
+
+        gsap.to(sprite, {
+          x: sprite.x - app.screen.width * 0.15,
+          duration: 0.8,
+          ease: 'power2.inOut'
+        });
+
+        gsap.to(sprite.scale, {
+          x: sprite.scale.x / 1.3,
+          y: sprite.scale.y / 1.3,
+          duration: 0.8,
+          ease: 'power2.inOut'
+        });
+      }
+
       appRef.current.page19Elements = null;
       setShowPage19Text(false);
-      console.log('🛑 Animation page 19 interrompue - Bulle de dialogue supprimée');
+      console.log('🛑 Animation page 19 interrompue - Bulle de dialogue supprimée et dézoom');
     }
 
     // Si on va vers la page 19, masquer le texte (il sera réaffiché par playPage19Animation)
